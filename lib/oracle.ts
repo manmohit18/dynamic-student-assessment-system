@@ -18,7 +18,7 @@ export async function getConnection() {
 export async function query<T = Record<string, unknown>>(
   sql: string,
   binds: Record<string, unknown> = {},
-) {
+): Promise<T[]> {
   const conn: Connection = await getConnection();
   try {
     const result = await conn.execute<T>(sql, binds, {

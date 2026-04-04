@@ -1,25 +1,14 @@
-import { branches, semesterCourses } from "@/lib/catalog";
-import { hashPassword } from "@/lib/auth";
-import { execute, executeMany, query } from "@/lib/oracle";
+/// <reference types="node" />
 
-type RoleSeed = {
-  email: string;
-  username: string;
-  password: string;
-  role: "student" | "faculty" | "admin";
-  branch?: string;
-  currentSemester?: number;
-  currentYear?: number;
-  graduationYear?: number;
-  department?: string;
-};
-
-type StudentSeed = RoleSeed & {
-  branch: string;
-  currentSemester: number;
-  currentYear: number;
-  graduationYear: number;
-};
+import { branches, semesterCourses } from "../lib/catalog";
+import { hashPassword } from "../lib/auth";
+import { execute, executeMany, query } from "../lib/oracle";
+import type {
+  AssessmentResult,
+  CourseOfferingResult,
+  RoleSeed,
+  StudentSeed,
+} from "../types/reset-oracle";
 
 const sampleFaculty: RoleSeed[] = [
   {
@@ -602,13 +591,7 @@ async function seedData() {
     offeringRows,
   );
 
-  const courseOfferingLookup = await query<{
-    COURSE_OFFERING_ID: number;
-    COURSE_ID: string;
-    SEMESTER: number;
-    BRANCH: string;
-    ACADEMIC_YEAR: number;
-  }>(
+  const courseOfferingLookup = await query<CourseOfferingResult>(
     `
       SELECT course_offering_id, course_id, semester, branch, academic_year
       FROM course_offering
@@ -704,13 +687,7 @@ async function seedData() {
     attendRows,
   );
 
-  const assessmentLookup = await query<{
-    ASSESSMENT_ID: number;
-    COURSE_OFFERING_ID: number;
-    ASSESSMENT_TYPE: string;
-    WEIGHT: number;
-    TOTAL_MARKS: number;
-  }>(
+  const assessmentLookup = await query<AssessmentResult>(
     `
       SELECT assessment_id, course_offering_id, assessment_type, weight, total_marks
       FROM assessment
@@ -773,13 +750,13 @@ async function seedData() {
 
   const sgpaRows = sampleStudents.flatMap((student) => {
     const semesterCourseRows = courseOfferingLookup.filter(
-      (offering) =>
+      (offering: CourseOfferingResult) =>
         offering.BRANCH === student.branch &&
         Number(offering.SEMESTER) < Number(student.currentSemester ?? 0),
     );
-    const semesterGroups = new Map<number, typeof semesterCourseRows>();
+    const semesterGroups = new Map<number, CourseOfferingResult[]>();
 
-    semesterCourseRows.forEach((offering) => {
+    semesterCourseRows.forEach((offering: CourseOfferingResult) => {
       const semester = Number(offering.SEMESTER);
       semesterGroups.set(semester, [...(semesterGroups.get(semester) ?? []), offering]);
     });
