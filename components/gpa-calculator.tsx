@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { subjectData } from "@/app/gpa/subjects";
 import { Calculator } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 
 const gradePoints: Record<string, number> = {
@@ -129,15 +129,19 @@ export function GpaCalculator({
   }
 
   return (
-    <Card className="border-amber-300/20">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-amber-300" />
-          <CardTitle>GPA calculator</CardTitle>
+    <section className="grid gap-6 xl:grid-cols-[0.86fr_1.14fr]">
+      <div className="rounded-4xl border border-stone-200 bg-white/95 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
+        <div className="flex items-center gap-3">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-500 text-white shadow-[0_10px_30px_rgba(180,83,9,0.16)]">
+            <Calculator className="h-5 w-5" />
+          </div>
+          <div>
+            <CardTitle className="text-2xl text-slate-900">GPA calculator</CardTitle>
+            <p className="text-sm text-slate-600">Plan a semester outcome without losing the current academic context.</p>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+
+        <div className="mt-6 space-y-3">
           <Select value={semester} onChange={(e) => setSemester(e.target.value)}>
             {Array.from({ length: 8 }, (_, index) => index + 1).map((item) => (
               <option key={item} value={String(item)}>
@@ -173,109 +177,116 @@ export function GpaCalculator({
               ))}
             </Select>
           )}
-        </div>
 
-        {semesterNumber >= 7 ? (
-          <label className="mt-3 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            <span>
-              <span className="block font-medium text-white">Include honors subjects</span>
-              <span className="block text-xs text-slate-400">
-                Toggle this to show the honors courses in the selected semester.
+          {semesterNumber >= 7 ? (
+            <label className="flex items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <span>
+                <span className="block font-medium text-slate-900">Include honors subjects</span>
+                <span className="block text-xs text-slate-600">
+                  Toggle this to show the honors courses in the selected semester.
+                </span>
               </span>
-            </span>
-            <input
-              type="checkbox"
-              checked={includeHonors}
-              onChange={(e) => setIncludeHonors(e.target.checked)}
-              className="h-5 w-5 rounded border-white/20 bg-white/5 text-amber-400 focus:ring-amber-300/30"
-            />
-          </label>
-        ) : null}
-
-        <div className="mt-4 space-y-3">
-          {regularSubjectEntries.map(([name, credits]) => (
-            <div key={name} className="grid gap-3 rounded-2xl border border-white/10 bg-slate-950/40 p-3 md:grid-cols-[1fr_160px]">
-              <div>
-                <p className="font-medium text-white">{name}</p>
-                <p className="text-xs text-slate-400">{credits} credits</p>
-              </div>
-              <Select
-                value={grades[name] ?? ""}
-                onChange={(e) => setGrades((current) => ({ ...current, [name]: e.target.value }))}
-              >
-                <option value="">Grade</option>
-                <option value="A+">A+</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-                <option value="E">E</option>
-                <option value="F">F</option>
-              </Select>
-            </div>
-          ))}
-
-          {honorsEnabled ? (
-            honorsSubjectEntries.length > 0 ? (
-              <div className="space-y-3 pt-2">
-                <p className="text-xs uppercase tracking-[0.3em] text-amber-200/80">Honors subjects</p>
-                {honorsSubjectEntries.map(([name, credits]) => (
-                  <div
-                    key={name}
-                    className="grid gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/5 p-3 md:grid-cols-[1fr_160px]"
-                  >
-                    <div>
-                      <p className="font-medium text-white">{name}</p>
-                      <p className="text-xs text-slate-400">{credits} credits</p>
-                    </div>
-                    <Select
-                      value={grades[name] ?? ""}
-                      onChange={(e) => setGrades((current) => ({ ...current, [name]: e.target.value }))}
-                    >
-                      <option value="">Grade</option>
-                      <option value="A+">A+</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                      <option value="E">E</option>
-                      <option value="F">F</option>
-                    </Select>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-400">
-                No honors subjects are defined for this semester.
-              </div>
-            )
+              <input
+                type="checkbox"
+                checked={includeHonors}
+                onChange={(e) => setIncludeHonors(e.target.checked)}
+                className="h-5 w-5 rounded border-stone-300 bg-white text-amber-600 focus:ring-amber-400/20"
+              />
+            </label>
           ) : null}
         </div>
 
-        <Button className="mt-4 w-full" onClick={calculate}>
+        <Button className="mt-5 w-full" onClick={calculate}>
           Calculate GPA
         </Button>
 
         {result !== null && calculatedFor === selectionKey ? (
-          <div className="mt-4 rounded-3xl border border-emerald-400/25 bg-emerald-400/10 p-5 text-center">
-            <p className="text-xs uppercase tracking-[0.3em] text-emerald-200">Projected GPA</p>
-            {projectedCgpa !== null ? (
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 sm:text-left">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center sm:text-left">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-300">Predicted SGPA</p>
-                  <p className="mt-2 text-4xl font-semibold text-white">{result}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center sm:text-left">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-300">Predicted CGPA</p>
-                  <p className="mt-2 text-4xl font-semibold text-white">{projectedCgpa}</p>
-                </div>
+          <div className="mt-5 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
+            <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">Projected GPA</p>
+            <div className="mt-3 flex items-end gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Predicted SGPA</p>
+                <p className="mt-2 text-4xl font-semibold text-slate-900">{result}</p>
               </div>
-            ) : (
-              <p className="mt-2 text-4xl font-semibold text-white">{result}</p>
-            )}
+              {projectedCgpa !== null ? (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Predicted CGPA</p>
+                  <p className="mt-2 text-4xl font-semibold text-slate-900">{projectedCgpa}</p>
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="rounded-4xl border border-stone-200 bg-white/95 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
+        <div className="grid gap-4 lg:grid-cols-[1fr_0.76fr] lg:items-start">
+          <div>
+            <CardTitle className="text-xl text-slate-900">Subjects</CardTitle>
+            <p className="mt-1 text-sm text-slate-600">Enter the grade you want to test for each subject.</p>
+
+            <div className="mt-5 space-y-3">
+              {regularSubjectEntries.map(([name, credits]) => (
+                <div key={name} className="grid gap-3 rounded-3xl border border-stone-200 bg-stone-50 p-3 md:grid-cols-[1fr_160px]">
+                  <div>
+                    <p className="font-medium text-slate-900">{name}</p>
+                    <p className="text-xs text-slate-500">{credits} credits</p>
+                  </div>
+                  <Select
+                    value={grades[name] ?? ""}
+                    onChange={(e) => setGrades((current) => ({ ...current, [name]: e.target.value }))}
+                  >
+                    <option value="">Grade</option>
+                    <option value="A+">A+</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                  </Select>
+                </div>
+              ))}
+
+              {honorsEnabled ? (
+                honorsSubjectEntries.length > 0 ? (
+                  <div className="space-y-3 pt-2">
+                    <p className="text-xs uppercase tracking-[0.3em] text-amber-700/80">Honors subjects</p>
+                    {honorsSubjectEntries.map(([name, credits]) => (
+                      <div
+                        key={name}
+                        className="grid gap-3 rounded-3xl border border-amber-200 bg-amber-50 p-3 md:grid-cols-[1fr_160px]"
+                      >
+                        <div>
+                          <p className="font-medium text-slate-900">{name}</p>
+                          <p className="text-xs text-slate-500">{credits} credits</p>
+                        </div>
+                        <Select
+                          value={grades[name] ?? ""}
+                          onChange={(e) => setGrades((current) => ({ ...current, [name]: e.target.value }))}
+                        >
+                          <option value="">Grade</option>
+                          <option value="A+">A+</option>
+                          <option value="A">A</option>
+                          <option value="B">B</option>
+                          <option value="C">C</option>
+                          <option value="D">D</option>
+                          <option value="E">E</option>
+                          <option value="F">F</option>
+                        </Select>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-500">
+                    No honors subjects are defined for this semester.
+                  </div>
+                )
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

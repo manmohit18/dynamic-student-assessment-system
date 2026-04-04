@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
-  CalendarRange,
   ChevronRight,
   ClipboardList,
   Trophy,
@@ -13,7 +12,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CourseDetailAssessment, CourseProgress, StudentProfile } from "@/lib/db-queries";
 
 type CourseDetail = {
@@ -122,12 +121,12 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
         <div className="space-y-6">
-          <div className="rounded-4xl border border-white/10 bg-slate-950/70 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-8">
+          <div className="rounded-4xl border border-stone-200 bg-white/90 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Badge className="w-fit border-white/10 bg-white/5 text-slate-100">Transcript archive</Badge>
-                <h1 className="text-3xl font-semibold text-white sm:text-4xl">Past semesters for {profile.username}</h1>
-                <p className="max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                <Badge className="w-fit border-stone-200 bg-white text-slate-700">Transcript archive</Badge>
+                <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">Past semesters for {profile.username}</h1>
+                <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                   Filter by semester, then open any completed course to inspect its assessment trail and final grade.
                 </p>
               </div>
@@ -137,18 +136,18 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
               </div>
 
               <div className="flex flex-wrap items-center gap-3 pt-1">
-                <label className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
-                  <span className="text-xs uppercase tracking-[0.28em] text-slate-400">Semester</span>
+                <label className="flex items-center gap-3 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm">
+                  <span className="text-xs uppercase tracking-[0.28em] text-slate-500">Semester</span>
                   <select
                     value={selectedSemester}
                     onChange={(e) => setSelectedSemester(e.target.value)}
-                    className="bg-transparent text-sm text-white outline-none"
+                    className="bg-transparent text-sm text-slate-900 outline-none"
                   >
-                    <option value="all" className="bg-slate-950 text-white">
+                    <option value="all" className="bg-white text-slate-900">
                       All
                     </option>
                     {semesterOptions.map((semester) => (
-                      <option key={semester} value={String(semester)} className="bg-slate-950 text-white">
+                      <option key={semester} value={String(semester)} className="bg-white text-slate-900">
                         Semester {semester}
                       </option>
                     ))}
@@ -161,10 +160,10 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-4xl border border-white/10 bg-slate-950/60 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:p-8">
+          <div className="space-y-4 rounded-4xl border border-stone-200 bg-white/90 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5 text-amber-300" />
+                <ClipboardList className="h-5 w-5 text-amber-600" />
                 Semester archive
               </CardTitle>
               <CardDescription>
@@ -176,15 +175,15 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
             <div className="space-y-5">
               {visibleGroups.length ? (
                 visibleGroups.map(({ semester, semesterCourses, credits }) => (
-                  <div key={semester} className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
+                  <div key={semester} className="space-y-3 rounded-3xl border border-stone-200 bg-stone-50 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.32em] text-slate-400">Semester {semester}</p>
-                        <p className="mt-1 text-sm text-slate-300">
+                        <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Semester {semester}</p>
+                        <p className="mt-1 text-sm text-slate-600">
                           {semesterCourses.length} course{semesterCourses.length === 1 ? "" : "s"}
                         </p>
                       </div>
-                      <Badge className="border-white/10 bg-slate-950/70 text-slate-100">{credits} credits</Badge>
+                      <Badge className="border-stone-200 bg-white text-slate-700">{credits} credits</Badge>
                     </div>
 
                     <div className="grid gap-3">
@@ -198,25 +197,25 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                             onClick={() => setSelectedId(course.courseOfferingId)}
                             className={`group rounded-[1.4rem] border p-4 text-left transition-colors ${
                               active
-                                ? "border-amber-300/40 bg-amber-300/10"
-                                : "border-white/10 bg-slate-950/40 hover:border-white/20 hover:bg-white/10"
+                                ? "border-amber-300/60 bg-amber-50"
+                                : "border-stone-200 bg-white hover:border-stone-300"
                             }`}
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{course.courseId}</p>
-                                <h3 className="text-lg font-medium text-white">{course.courseTitle}</h3>
-                                <p className="text-sm text-slate-300">{course.facultyName}</p>
+                                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">{course.courseId}</p>
+                                <h3 className="text-lg font-medium text-slate-900">{course.courseTitle}</h3>
+                                <p className="text-sm text-slate-600">{course.facultyName}</p>
                               </div>
 
                               <ChevronRight
                                 className={`mt-1 h-5 w-5 transition-transform ${
-                                  active ? "text-amber-200" : "text-slate-500 group-hover:translate-x-1 group-hover:text-slate-200"
+                                  active ? "text-amber-600" : "text-slate-400 group-hover:translate-x-1 group-hover:text-slate-600"
                                 }`}
                               />
                             </div>
 
-                            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-300">
+                            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-600">
                               <span>{course.courseType}</span>
                               <span>•</span>
                               <span>{course.credits} credits</span>
@@ -228,14 +227,14 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
 
                             <div className="mt-3 flex items-end justify-between gap-3">
                               <div>
-                                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Final</p>
-                                <p className="mt-1 text-2xl font-semibold text-amber-200">
+                                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Final</p>
+                                <p className="mt-1 text-2xl font-semibold text-amber-700">
                                   {course.finalGrade ?? "Pending"}
                                 </p>
                               </div>
                               <div className="text-right">
-                                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Raw</p>
-                                <p className="mt-1 text-sm text-slate-200">
+                                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Raw</p>
+                                <p className="mt-1 text-sm text-slate-800">
                                   {course.earnedRaw}/{course.possibleRaw}
                                 </p>
                               </div>
@@ -247,7 +246,7 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                   </div>
                 ))
               ) : (
-                <p className="rounded-[1.4rem] border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-slate-400">
+                <p className="rounded-[1.4rem] border border-dashed border-stone-200 bg-white px-4 py-6 text-sm text-slate-500">
                   No completed semesters match the selected filter.
                 </p>
               )}
@@ -255,10 +254,10 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
           </div>
         </div>
 
-        <div className="sticky top-24 h-fit self-start rounded-4xl border border-white/10 bg-slate-950/70 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-8">
+        <div className="sticky top-24 h-fit self-start rounded-4xl border border-stone-200 bg-white/90 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
           <CardHeader>
-            <Badge className="w-fit border-white/10 bg-white/5 text-slate-100">Course dossier</Badge>
-            <CardTitle className="mt-2 text-3xl font-serif">
+            <Badge className="w-fit border-stone-200 bg-white text-slate-700">Course dossier</Badge>
+            <CardTitle className="mt-2 text-3xl font-serif text-slate-900">
               {selectedCourse?.courseTitle ?? "Select a course"}
             </CardTitle>
             <CardDescription>
@@ -278,28 +277,28 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                     <InfoTile label="Grade" value={detail.course.finalGrade ?? "Pending"} />
                   </div>
 
-                  <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4">
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Transcript summary</p>
+                  <div className="rounded-[1.6rem] border border-stone-200 bg-white p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Transcript summary</p>
                     <div className="mt-3 flex items-end justify-between gap-4">
                       <div>
-                        <p className="text-sm text-slate-300">Raw marks earned</p>
-                        <p className="mt-1 text-3xl font-semibold text-white">
+                        <p className="text-sm text-slate-600">Raw marks earned</p>
+                        <p className="mt-1 text-3xl font-semibold text-slate-900">
                           {detail.course.earnedRaw}/{detail.course.possibleRaw}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-slate-300">Weighted total</p>
-                        <p className="mt-1 text-3xl font-semibold text-amber-200">{detail.course.weightedTotal}</p>
+                        <p className="text-sm text-slate-600">Weighted total</p>
+                        <p className="mt-1 text-3xl font-semibold text-amber-700">{detail.course.weightedTotal}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-sm font-medium uppercase tracking-[0.3em] text-slate-400">
+                      <h3 className="text-sm font-medium uppercase tracking-[0.3em] text-slate-500">
                         Individual assessments
                       </h3>
-                      <Badge className="border-white/10 bg-white/5 text-slate-100">
+                      <Badge className="border-stone-200 bg-white text-slate-700">
                         {detail.assessments.length} items
                       </Badge>
                     </div>
@@ -312,30 +311,30 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                             : Math.round((assessment.marksObtained / assessment.totalMarks) * 100);
 
                         return (
-                          <div key={assessment.assessmentId} className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4">
+                          <div key={assessment.assessmentId} className="rounded-[1.4rem] border border-stone-200 bg-white p-4 shadow-sm">
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <p className="font-medium text-white">{assessment.assessmentType}</p>
-                                <p className="mt-1 text-xs uppercase tracking-[0.28em] text-slate-400">
+                                <p className="font-medium text-slate-900">{assessment.assessmentType}</p>
+                                <p className="mt-1 text-xs uppercase tracking-[0.28em] text-slate-500">
                                   {assessment.assessmentDate ?? "Date pending"}
                                 </p>
                               </div>
                               <div className="text-right">
-                                <p className="text-lg font-semibold text-amber-200">
+                                <p className="text-lg font-semibold text-amber-700">
                                   {assessment.marksObtained ?? "NA"}
                                 </p>
-                                <p className="text-xs text-slate-400">of {assessment.totalMarks}</p>
+                                <p className="text-xs text-slate-500">of {assessment.totalMarks}</p>
                               </div>
                             </div>
 
-                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-900/80">
+                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-stone-100">
                               <div
-                                className="h-full rounded-full bg-linear-to-r from-amber-300 to-sky-300"
+                                className="h-full rounded-full bg-linear-to-r from-amber-500 to-sky-500"
                                 style={{ width: `${percentage ?? 0}%` }}
                               />
                             </div>
 
-                            <div className="mt-3 flex items-center justify-between text-sm text-slate-300">
+                            <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
                               <span>{assessment.weight}% weight</span>
                               <span>{percentage === null ? "Pending" : `${percentage}%`}</span>
                             </div>
@@ -347,19 +346,19 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5">
-                    <div className="flex items-center gap-3 text-slate-300">
-                      <Trophy className="h-5 w-5 text-amber-300" />
+                  <div className="rounded-[1.4rem] border border-stone-200 bg-stone-50 p-5">
+                    <div className="flex items-center gap-3 text-slate-700">
+                      <Trophy className="h-5 w-5 text-amber-600" />
                       <span>Loading course dossier</span>
                     </div>
-                    <p className="mt-3 text-sm text-slate-400">
+                    <p className="mt-3 text-sm text-slate-500">
                       {loadingDetail ? "Fetching assessments from Oracle..." : "Preparing the transcript entry."}
                     </p>
                   </div>
                 </div>
               )
             ) : (
-              <div className="rounded-[1.4rem] border border-dashed border-white/10 bg-white/5 p-6 text-sm text-slate-400">
+              <div className="rounded-[1.4rem] border border-dashed border-stone-200 bg-white p-6 text-sm text-slate-500">
                 No completed course is selected. Choose one from the left archive to inspect its assessment marks.
               </div>
             )}
@@ -372,21 +371,21 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
 
 function MetricCard({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="rounded-[1.2rem] border border-white/10 bg-white/5 p-4 backdrop-blur">
-      <div className="flex items-center gap-2 text-slate-400">
-        <Icon className="h-4 w-4 text-amber-300" />
+    <div className="rounded-[1.2rem] border border-stone-200 bg-white p-4 shadow-sm backdrop-blur">
+      <div className="flex items-center gap-2 text-slate-500">
+        <Icon className="h-4 w-4 text-amber-600" />
         <span className="text-xs uppercase tracking-[0.3em]">{label}</span>
       </div>
-      <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
     </div>
   );
 }
 
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.3rem] border border-white/10 bg-slate-950/50 p-4">
-      <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{label}</p>
-      <p className="mt-2 text-sm font-medium text-white">{value}</p>
+    <div className="rounded-[1.3rem] border border-stone-200 bg-white p-4 shadow-sm">
+      <p className="text-xs uppercase tracking-[0.28em] text-slate-500">{label}</p>
+      <p className="mt-2 text-sm font-medium text-slate-900">{value}</p>
     </div>
   );
 }

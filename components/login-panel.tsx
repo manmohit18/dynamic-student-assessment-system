@@ -39,7 +39,7 @@ export function LoginPanel() {
   }
 
   return (
-    <Card className="mx-auto max-w-md">
+    <Card className="mx-auto max-w-md border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
       <CardHeader>
         <CardTitle>Sign in</CardTitle>
         <CardDescription>Use a seeded student or faculty account from the database reset.</CardDescription>
@@ -47,14 +47,14 @@ export function LoginPanel() {
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block space-y-2">
-            <span className="text-sm text-slate-300">Email</span>
+            <span className="text-sm text-slate-600">Email</span>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input className="pl-11" value={email} onChange={(event) => setEmail(event.target.value)} />
             </div>
           </label>
           <label className="block space-y-2">
-            <span className="text-sm text-slate-300">Password</span>
+            <span className="text-sm text-slate-600">Password</span>
             <div className="relative">
               <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
@@ -66,7 +66,7 @@ export function LoginPanel() {
             </div>
           </label>
 
-          {error ? <p className="text-sm text-red-300">{error}</p> : null}
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
           <Button className="w-full" type="submit" disabled={loading}>
             {loading ? "Signing in..." : "Enter portal"}

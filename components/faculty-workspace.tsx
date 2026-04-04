@@ -110,10 +110,10 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <Card>
+        <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
           <CardHeader>
             <Badge className="w-fit">Faculty tools</Badge>
-            <CardTitle className="mt-2 text-3xl">Assessment upload workspace</CardTitle>
+            <CardTitle className="mt-2 text-3xl text-slate-900">Assessment upload workspace</CardTitle>
             <CardDescription>Select a course offering and push marks to Oracle.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -133,9 +133,9 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
           <CardHeader>
-            <CardTitle>{selectedOffering.courseTitle}</CardTitle>
+            <CardTitle className="text-slate-900">{selectedOffering.courseTitle}</CardTitle>
             <CardDescription>
               {selectedOffering.courseId} • {selectedOffering.courseType} • {selectedOffering.credits} credits
             </CardDescription>
@@ -163,10 +163,10 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
 
                 <div className="space-y-3">
                   {detail.students.map((student) => (
-                    <div key={student.email} className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 md:grid-cols-[1.4fr_0.8fr_0.6fr]">
+                    <div key={student.email} className="grid gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:grid-cols-[1.4fr_0.8fr_0.6fr]">
                       <div>
-                        <p className="font-medium text-white">{student.username}</p>
-                        <p className="text-xs text-slate-400">{student.email}</p>
+                        <p className="font-medium text-slate-900">{student.username}</p>
+                        <p className="text-xs text-slate-500">{student.email}</p>
                       </div>
                       <Input
                         type="number"
@@ -187,9 +187,9 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
         </Card>
       </section>
 
-      <Card>
+      <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <CardHeader>
-          <CardTitle>Course list</CardTitle>
+            <CardTitle className="text-slate-900">Course list</CardTitle>
           <CardDescription>Each card shows the progress snapshot for a faculty-owned offering.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -199,16 +199,16 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
               onClick={() => setSelectedOfferingId(offering.courseOfferingId)}
               className={`rounded-3xl border p-4 text-left transition-all ${
                 selectedOfferingId === offering.courseOfferingId
-                  ? "border-amber-300/50 bg-amber-300/10"
-                  : "border-white/10 bg-white/5 hover:border-white/20"
+                  ? "border-amber-300/60 bg-amber-50"
+                  : "border-stone-200 bg-white hover:border-stone-300"
               }`}
             >
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{offering.courseId}</p>
-              <h4 className="mt-2 text-lg font-medium text-white">{offering.courseTitle}</h4>
-              <p className="mt-2 text-sm text-slate-300">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{offering.courseId}</p>
+              <h4 className="mt-2 text-lg font-medium text-slate-900">{offering.courseTitle}</h4>
+              <p className="mt-2 text-sm text-slate-600">
                 {offering.semester} / {offering.branch} • {offering.courseType}
               </p>
-              <p className="mt-3 text-sm text-amber-200">
+              <p className="mt-3 text-sm text-amber-700">
                 {offering.averageMarks.toFixed(2)} avg, {offering.totalStudents} students
               </p>
             </button>
@@ -221,9 +221,9 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+    <div className="rounded-2xl border border-stone-200 bg-white p-4">
+      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

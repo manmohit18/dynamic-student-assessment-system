@@ -1,13 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CourseProgress, StudentProfile } from "@/lib/db-queries";
-import { ArrowUpRight, CalendarRange, GraduationCap } from "@/components/icons";
 
 type CourseDetail = {
   course: CourseProgress;
@@ -65,39 +62,39 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
                 onClick={() => setSelectedId(course.courseOfferingId)}
                 className={`rounded-3xl border p-4 text-left transition-all ${
                   selected?.courseOfferingId === course.courseOfferingId
-                    ? "border-amber-300/50 bg-amber-300/10"
-                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/5"
+                    ? "border-amber-300/60 bg-amber-50"
+                    : "border-stone-200 bg-white hover:border-stone-300"
                 }`}
               >
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{course.courseId}</p>
-                <h4 className="mt-2 line-clamp-2 text-lg font-medium text-white">{course.courseTitle}</h4>
-                <p className="mt-3 text-2xl font-semibold text-amber-200">
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">{course.courseId}</p>
+                <h4 className="mt-2 line-clamp-2 text-lg font-medium text-slate-900">{course.courseTitle}</h4>
+                <p className="mt-3 text-2xl font-semibold text-amber-700">
                   {course.earnedRaw}/{course.possibleRaw}
                 </p>
-                <p className="mt-1 text-sm text-slate-400">{course.facultyName}</p>
-                {course.finalGrade ? <Badge className="mt-3">{course.finalGrade}</Badge> : null}
+                <p className="mt-1 text-sm text-slate-600">{course.facultyName}</p>
+                {course.finalGrade ? <Badge className="mt-3 border-stone-200 bg-white text-slate-700">{course.finalGrade}</Badge> : null}
               </button>
             ))}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
           <CardHeader>
-            <CardTitle>Course detail</CardTitle>
+            <CardTitle className="text-slate-900">Course detail</CardTitle>
             <CardDescription>Breakdown for the selected course.</CardDescription>
           </CardHeader>
           <CardContent>
             {detail ? (
               <div className="space-y-4">
-                <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
+                <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
                     {detail.course.courseId} • {detail.course.courseType}
                   </p>
-                  <h4 className="mt-2 text-xl font-medium text-white">{detail.course.courseTitle}</h4>
-                  <p className="mt-2 text-sm text-slate-300">
+                  <h4 className="mt-2 text-xl font-medium text-slate-900">{detail.course.courseTitle}</h4>
+                  <p className="mt-2 text-sm text-slate-600">
                     {detail.course.earnedRaw}/{detail.course.possibleRaw} raw marks earned so far.
                   </p>
-                  <p className="mt-2 text-sm text-slate-300">
+                  <p className="mt-2 text-sm text-slate-600">
                     Status: {detail.course.status === "true" ? "Ongoing" : "Past"}
                     {detail.course.finalGrade ? ` • Grade ${detail.course.finalGrade}` : ""}
                   </p>
@@ -107,21 +104,21 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
                   {detail.assessments.map((assessment) => (
                     <div
                       key={assessment.assessmentId}
-                      className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+                      className="flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-4 py-3"
                     >
                       <div>
-                        <p className="font-medium text-white">{assessment.assessmentType}</p>
-                        <p className="text-xs text-slate-400">
+                        <p className="font-medium text-slate-900">{assessment.assessmentType}</p>
+                        <p className="text-xs text-slate-500">
                           {assessment.totalMarks} marks • {assessment.weight} weight
                         </p>
                       </div>
-                      <p className="text-lg font-semibold text-amber-200">{assessment.marksObtained ?? "NA"}</p>
+                      <p className="text-lg font-semibold text-amber-700">{assessment.marksObtained ?? "NA"}</p>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-slate-400">Select a course to inspect its assessment breakdown.</p>
+              <p className="text-sm text-slate-500">Select a course to inspect its assessment breakdown.</p>
             )}
           </CardContent>
         </Card>

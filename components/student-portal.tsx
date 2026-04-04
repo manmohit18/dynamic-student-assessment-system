@@ -19,11 +19,11 @@ export function StudentPortal({ profile, sgpaHistory }: StudentPortalProps) {
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-      <section className="rounded-4xl border border-white/10 bg-slate-950/65 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-8">
+      <section className="rounded-4xl border border-stone-200 bg-white/90 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">
             <Badge className="w-fit">Academic snapshot</Badge>
-            <CardTitle className="text-3xl sm:text-4xl">Welcome back, {profile.username}</CardTitle>
+            <CardTitle className="text-3xl text-slate-900 sm:text-4xl">Welcome back, {profile.username}</CardTitle>
             <CardDescription>
               {profile.branch} student, semester {profile.currentSemester} of {profile.currentYear}
             </CardDescription>
@@ -37,7 +37,7 @@ export function StudentPortal({ profile, sgpaHistory }: StudentPortalProps) {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-4xl border border-white/10 bg-slate-950/60 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:p-8">
+        <div className="rounded-4xl border border-stone-200 bg-white/90 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
           <div className="flex items-center justify-between gap-3">
             <div>
               <CardTitle>SGPA history</CardTitle>
@@ -50,29 +50,29 @@ export function StudentPortal({ profile, sgpaHistory }: StudentPortalProps) {
               history.slice(0, 3).map((record) => (
                 <div
                   key={`${record.academicYear}-${record.semester}`}
-                  className="flex items-center justify-between rounded-3xl border border-white/10 bg-white/5 px-4 py-3"
+                  className="flex items-center justify-between rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="rounded-full border border-amber-300/30 bg-amber-300/10 p-2 text-amber-200">
+                    <div className="rounded-full border border-amber-200 bg-amber-50 p-2 text-amber-700">
                       <CalendarRange className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">Semester {record.semester}</p>
-                      <p className="text-xs text-slate-400">{record.academicYear}</p>
+                      <p className="text-sm font-medium text-slate-900">Semester {record.semester}</p>
+                      <p className="text-xs text-slate-500">{record.academicYear}</p>
                     </div>
                   </div>
                   <Badge className="text-sm">{record.gpa.toFixed(2)}</Badge>
                 </div>
               ))
             ) : (
-              <p className="rounded-3xl border border-dashed border-white/10 px-4 py-6 text-sm text-slate-400">
+              <p className="rounded-3xl border border-dashed border-stone-200 px-4 py-6 text-sm text-slate-500">
                 No completed semester GPA records yet.
               </p>
             )}
           </div>
         </div>
 
-        <div className="rounded-4xl border border-white/10 bg-white/5 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8">
+        <div className="rounded-4xl border border-stone-200 bg-white/90 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
           <div className="space-y-3">
             <CardTitle>Quick links</CardTitle>
             <CardDescription>Use the dedicated pages for current courses and history.</CardDescription>
@@ -100,12 +100,12 @@ function Metric({ icon, label, value }: {
   value: string;
 }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-slate-950/40 p-4">
-      <div className="flex items-center gap-2 text-slate-400">
+    <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-2 text-slate-500">
         {icon}
         <span className="text-xs uppercase tracking-[0.3em]">{label}</span>
       </div>
-      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
+      <p className="mt-3 text-3xl font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

@@ -11,10 +11,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const buttonVariants = {
   default:
-    "bg-amber-400 text-slate-950 shadow-[0_10px_30px_rgba(251,191,36,0.25)] hover:bg-amber-300",
-  secondary: "bg-slate-800 text-white hover:bg-slate-700",
-  ghost: "bg-transparent text-slate-100 hover:bg-white/10",
-  outline: "border border-white/15 bg-white/5 text-slate-100 hover:bg-white/10",
+    "bg-[color:var(--foreground)] text-white shadow-[0_12px_30px_rgba(31,41,55,0.14)] hover:opacity-90",
+  secondary: "border border-[color:rgba(31,41,55,0.16)] bg-white text-[color:var(--foreground)] hover:bg-[rgba(31,41,55,0.04)]",
+  ghost: "bg-transparent text-[color:var(--foreground)] hover:bg-[rgba(31,41,55,0.06)]",
+  outline: "border border-[color:rgba(31,41,55,0.16)] bg-white text-[color:var(--foreground)] hover:bg-[rgba(31,41,55,0.04)]",
 };
 
 const buttonSizes = {
