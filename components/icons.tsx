@@ -131,6 +131,18 @@ export function Calculator(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function CalendarRange(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="4" y="5" width="16" height="15" rx="2" />
+      <path d="M4 9h16" />
+      <path d="M8 3v4" />
+      <path d="M16 3v4" />
+      <path d="M8 13h8" />
+    </Icon>
+  );
+}
+
 export function Mail(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

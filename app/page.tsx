@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 
 import { decodeSession } from "@/lib/auth";
-import { getFacultyOfferings, getStudentCourses, getStudentProfile } from "@/lib/db-queries";
+import { getFacultyOfferings, getStudentProfile, getStudentSgpaHistory } from "@/lib/db-queries";
 import { LoginPanel } from "@/components/login-panel";
 import { PortalHeader } from "@/components/portal-header";
 import { StudentPortal } from "@/components/student-portal";
@@ -73,8 +73,6 @@ export default async function Home() {
   }
 
   const profile = await getStudentProfile(session.email);
-  const courses = await getStudentCourses(session.email);
-
   if (!profile) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4">
@@ -83,10 +81,12 @@ export default async function Home() {
     );
   }
 
+  const sgpaHistory = await getStudentSgpaHistory(session.email);
+
   return (
     <>
       <PortalHeader name={profile.username} role={session.role} />
-      <StudentPortal profile={profile} courses={courses} />
+      <StudentPortal profile={profile} sgpaHistory={sgpaHistory} />
     </>
   );
 }

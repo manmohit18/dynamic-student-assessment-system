@@ -3,9 +3,9 @@ import Link from "next/link";
 
 import { decodeSession } from "@/lib/auth";
 import { getStudentCourses, getStudentProfile } from "@/lib/db-queries";
-import { PortalHeader } from "@/components/portal-header";
-import { StudentPortal } from "@/components/student-portal";
 import { LoginPanel } from "@/components/login-panel";
+import { PortalHeader } from "@/components/portal-header";
+import { StudentCourseBrowser } from "@/components/student-course-browser";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function CoursesPage() {
@@ -28,7 +28,10 @@ export default async function CoursesPage() {
           <Card>
             <CardHeader>
               <CardTitle>Student course view only</CardTitle>
-              <CardDescription>This page is focused on student progress. Use the faculty workspace for uploads.</CardDescription>
+              <CardDescription>
+                This page shows current semester cards and assessment breakdowns. Use the faculty workspace for
+                uploads.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Link href="/faculty" className="text-amber-200 underline">
@@ -55,7 +58,7 @@ export default async function CoursesPage() {
   return (
     <>
       <PortalHeader name={profile.username} role={session.role} />
-      <StudentPortal profile={profile} courses={courses} />
+      <StudentCourseBrowser profile={profile} courses={courses} />
     </>
   );
 }

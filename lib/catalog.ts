@@ -263,10 +263,10 @@ export const semesterCourses: Record<Semester, CourseSeed[]> = {
 export const gradeScale = [
   { grade: "A+", minMarks: 90 },
   { grade: "A", minMarks: 80 },
-  { grade: "B+", minMarks: 70 },
-  { grade: "B", minMarks: 60 },
-  { grade: "C", minMarks: 50 },
-  { grade: "D", minMarks: 40 },
+  { grade: "B", minMarks: 70 },
+  { grade: "C", minMarks: 60 },
+  { grade: "D", minMarks: 50 },
+  { grade: "E", minMarks: 40 },
   { grade: "F", minMarks: 0 },
 ] as const;
 

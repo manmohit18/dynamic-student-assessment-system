@@ -12,6 +12,12 @@ export type StudentProfile = {
   lastSgpa: number;
 };
 
+export type StudentSgpaRecord = {
+  semester: number;
+  academicYear: number;
+  gpa: number;
+};
+
 export type CourseProgress = {
   courseOfferingId: number;
   academicYear: number;
@@ -127,6 +133,24 @@ export async function getStudentCourses(email: string): Promise<CourseProgress[]
     finalGrade: toStringOrNull(row.FINAL_GRADE),
     status: String(row.STATUS),
     facultyName: String(row.FACULTY_NAME),
+  }));
+}
+
+export async function getStudentSgpaHistory(email: string): Promise<StudentSgpaRecord[]> {
+  const rows = (await query<Record<string, unknown>>(
+    `
+      SELECT semester, academic_year, gpa
+      FROM sgpa
+      WHERE student_id = :email
+      ORDER BY academic_year DESC, semester DESC
+    `,
+    { email },
+  )) as Record<string, unknown>[];
+
+  return rows.map((row) => ({
+    semester: toNumber(row.SEMESTER),
+    academicYear: toNumber(row.ACADEMIC_YEAR),
+    gpa: toNumber(row.GPA),
   }));
 }
 

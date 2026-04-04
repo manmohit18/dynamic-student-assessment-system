@@ -12,10 +12,10 @@ const subjectData = buildSubjectData();
 const gradePoints: Record<string, number> = {
   "A+": 10,
   A: 9,
-  "B+": 8,
-  B: 7,
-  C: 6,
-  D: 5,
+  B: 8,
+  C: 7,
+  D: 6,
+  E: 5,
   F: 0,
 };
 
@@ -84,10 +84,10 @@ export function GpaCalculator({ defaultBranch = "CSE", defaultSemester = 4 }: Gp
                 <option value="">Grade</option>
                 <option value="A+">A+</option>
                 <option value="A">A</option>
-                <option value="B+">B+</option>
                 <option value="B">B</option>
                 <option value="C">C</option>
                 <option value="D">D</option>
+                <option value="E">E</option>
                 <option value="F">F</option>
               </Select>
             </div>

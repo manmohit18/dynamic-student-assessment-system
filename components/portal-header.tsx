@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpenText, Calculator, LayoutDashboard, LogOut, ShieldCheck } from "@/components/icons";
+import { BookOpenText, Calculator, CalendarRange, LayoutDashboard, LogOut, ShieldCheck } from "@/components/icons";
 
 type PortalHeaderProps = {
   name: string;
@@ -43,6 +43,10 @@ export function PortalHeader({ name, role }: PortalHeaderProps) {
           <Link href="/courses" className="rounded-full px-4 py-2 text-sm text-slate-200 hover:bg-white/5">
             <BookOpenText className="mr-2 inline h-4 w-4" />
             Courses
+          </Link>
+          <Link href="/history" className="rounded-full px-4 py-2 text-sm text-slate-200 hover:bg-white/5">
+            <CalendarRange className="mr-2 inline h-4 w-4" />
+            History
           </Link>
           <Link href="/gpa" className="rounded-full px-4 py-2 text-sm text-slate-200 hover:bg-white/5">
             <Calculator className="mr-2 inline h-4 w-4" />

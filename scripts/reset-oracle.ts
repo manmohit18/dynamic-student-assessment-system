@@ -14,6 +14,13 @@ type RoleSeed = {
   department?: string;
 };
 
+type StudentSeed = RoleSeed & {
+  branch: string;
+  currentSemester: number;
+  currentYear: number;
+  graduationYear: number;
+};
+
 const sampleFaculty: RoleSeed[] = [
   {
     email: "faculty.cse@college.edu",
@@ -31,7 +38,7 @@ const sampleFaculty: RoleSeed[] = [
   },
 ];
 
-const sampleStudents: RoleSeed[] = [
+const sampleStudents: StudentSeed[] = [
   {
     email: "cse.student@college.edu",
     username: "Aarav Mehta",
@@ -87,20 +94,20 @@ const sampleStudents: RoleSeed[] = [
 const gradePoints: Record<string, number> = {
   "A+": 10,
   A: 9,
-  "B+": 8,
-  B: 7,
-  C: 6,
-  D: 5,
+  B: 8,
+  C: 7,
+  D: 6,
+  E: 5,
   F: 0,
 };
 
 function getGradeFromScore(score: number) {
   if (score >= 90) return "A+";
   if (score >= 80) return "A";
-  if (score >= 70) return "B+";
-  if (score >= 60) return "B";
-  if (score >= 50) return "C";
-  if (score >= 40) return "D";
+  if (score >= 70) return "B";
+  if (score >= 60) return "C";
+  if (score >= 50) return "D";
+  if (score >= 40) return "E";
   return "F";
 }
 
@@ -114,12 +121,14 @@ function assessmentPlan(type: "Theory" | "Lab") {
   return type === "Theory"
     ? [
         { label: "Quiz", totalMarks: 15, weight: 15 },
-        { label: "Mid Term", totalMarks: 30, weight: 35 },
-        { label: "End Term", totalMarks: 55, weight: 50 },
+        { label: "Mid Term", totalMarks: 30, weight: 30 },
+        { label: "End Term", totalMarks: 50, weight: 50 },
       ]
     : [
-        { label: "Lab Performance", totalMarks: 20, weight: 40 },
-        { label: "Practical/Viva", totalMarks: 30, weight: 60 },
+        { label: "Notebook", totalMarks: 20, weight: 20 },
+        { label: "Quiz", totalMarks: 10, weight: 10 },
+        { label: "Mid Term", totalMarks: 30, weight: 30 },
+        { label: "End Term", totalMarks: 40, weight: 40 },
       ];
 }
 
@@ -444,21 +453,7 @@ async function createSchema() {
         )
         ELSE NULL
       END AS final_grade,
-      CASE
-        WHEN NVL((
-          SELECT COUNT(*)
-          FROM assessment asmt
-          WHERE asmt.course_offering_id = fo.course_offering_id
-        ), 0) = NVL((
-          SELECT COUNT(*)
-          FROM attempts at
-          JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
-          WHERE at.student_mail = a.student_mail
-            AND asmt.course_offering_id = fo.course_offering_id
-        ), 0)
-        THEN 'Complete'
-        ELSE 'Ongoing'
-      END AS status
+      a.status AS status
     FROM attends a
     JOIN course_offering fo ON fo.course_offering_id = a.course_offering_id
     JOIN course c ON c.course_id = fo.course_id
@@ -518,7 +513,12 @@ function buildCourseOfferedRows(facultyIds: number[]) {
 }
 
 async function seedData() {
-  const facultyRows = [];
+  const facultyRows: Array<{
+    name: string;
+    email: string;
+    password_hash: string;
+    department: string;
+  }> = [];
   for (const faculty of sampleFaculty) {
     facultyRows.push({
       name: faculty.username,
@@ -538,7 +538,16 @@ async function seedData() {
   );
   const facultyIds = facultyResult.map((row) => Number(row.FACULTY_ID));
 
-  const studentRows = [];
+  const studentRows: Array<{
+    email: string;
+    username: string;
+    password_hash: string;
+    branch: string;
+    graduation_year: number;
+    current_semester: number;
+    current_year: number;
+    role: string;
+  }> = [];
   for (const student of sampleStudents) {
     studentRows.push({
       email: student.email,
@@ -652,10 +661,10 @@ async function seedData() {
     cutoffRows.push(
       { grade: "A+", min_marks: 90, max_marks: 100, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
       { grade: "A", min_marks: 80, max_marks: 89.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
-      { grade: "B+", min_marks: 70, max_marks: 79.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
-      { grade: "B", min_marks: 60, max_marks: 69.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
-      { grade: "C", min_marks: 50, max_marks: 59.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
-      { grade: "D", min_marks: 40, max_marks: 49.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
+      { grade: "B", min_marks: 70, max_marks: 79.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
+      { grade: "C", min_marks: 60, max_marks: 69.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
+      { grade: "D", min_marks: 50, max_marks: 59.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
+      { grade: "E", min_marks: 40, max_marks: 49.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
       { grade: "F", min_marks: 0, max_marks: 39.99, course_offering_id: Number(offering.COURSE_OFFERING_ID) },
     );
   }
@@ -675,7 +684,7 @@ async function seedData() {
     status: string;
   }> = [];
 
-  const studentBranchMap = new Map(sampleStudents.map((student) => [student.branch, student.email]));
+  const studentBranchMap = new Map<string, string>(sampleStudents.map((student) => [student.branch, student.email]));
   for (const offering of courseOfferingLookup) {
     const studentEmail = studentBranchMap.get(String(offering.BRANCH));
     if (!studentEmail) continue;
@@ -683,7 +692,7 @@ async function seedData() {
       student_mail: studentEmail,
       course_offering_id: Number(offering.COURSE_OFFERING_ID),
       enrollment_date: `2024-${String(Number(offering.SEMESTER)).padStart(2, "0")}-01`,
-      status: Number(offering.SEMESTER) === 4 ? "Ongoing" : "Completed",
+      status: Number(offering.SEMESTER) === 4 ? "true" : "false",
     });
   }
 
@@ -718,33 +727,39 @@ async function seedData() {
   }> = [];
 
   for (const student of studentProfiles) {
-    for (const assessment of assessmentLookup) {
-      const relatedOffering = courseOfferingLookup.find(
-        (offering) => Number(offering.COURSE_OFFERING_ID) === Number(assessment.COURSE_OFFERING_ID),
-      );
-      if (!relatedOffering || relatedOffering.BRANCH !== student.branch) continue;
+    for (const relatedOffering of courseOfferingLookup) {
+      if (relatedOffering.BRANCH !== student.branch) continue;
 
       const course = semesterCourses[Number(relatedOffering.SEMESTER) as 1 | 2 | 3 | 4].find(
         (row) => row.code === relatedOffering.COURSE_ID,
       );
       if (!course) continue;
 
-      const maxMarks = Number(assessment.TOTAL_MARKS);
-      const seed =
-        student.index * 1000 +
-        Number(relatedOffering.SEMESTER) * 100 +
-        Number(relatedOffering.COURSE_OFFERING_ID) +
-        Number(assessment.ASSESSMENT_ID);
-      const score = course.type === "Theory"
-        ? randFromSeed(seed, Math.floor(maxMarks * 0.55), Math.floor(maxMarks * 0.95))
-        : randFromSeed(seed, Math.floor(maxMarks * 0.65), Math.floor(maxMarks * 0.98));
+      const offeringAssessments = assessmentLookup
+        .filter((assessment) => Number(assessment.COURSE_OFFERING_ID) === Number(relatedOffering.COURSE_OFFERING_ID))
+        .sort((left, right) => Number(left.ASSESSMENT_ID) - Number(right.ASSESSMENT_ID));
 
-      attemptRows.push({
-        student_mail: student.email,
-        assessment_id: Number(assessment.ASSESSMENT_ID),
-        attempt_date: `2024-${String(Number(relatedOffering.SEMESTER)).padStart(2, "0")}-${String(10 + (seed % 15)).padStart(2, "0")}`,
-        marks_obtained: Math.min(maxMarks, score),
-      });
+      const isCurrentSemester = Number(relatedOffering.SEMESTER) === Number(student.currentSemester ?? 0);
+      const seededAssessments = isCurrentSemester ? offeringAssessments.slice(0, Math.min(2, offeringAssessments.length)) : offeringAssessments;
+
+      for (const assessment of seededAssessments) {
+        const maxMarks = Number(assessment.TOTAL_MARKS);
+        const seed =
+          student.index * 1000 +
+          Number(relatedOffering.SEMESTER) * 100 +
+          Number(relatedOffering.COURSE_OFFERING_ID) +
+          Number(assessment.ASSESSMENT_ID);
+        const score = course.type === "Theory"
+          ? randFromSeed(seed, Math.floor(maxMarks * 0.55), Math.floor(maxMarks * 0.95))
+          : randFromSeed(seed, Math.floor(maxMarks * 0.65), Math.floor(maxMarks * 0.98));
+
+        attemptRows.push({
+          student_mail: student.email,
+          assessment_id: Number(assessment.ASSESSMENT_ID),
+          attempt_date: `2024-${String(Number(relatedOffering.SEMESTER)).padStart(2, "0")}-${String(10 + (seed % 15)).padStart(2, "0")}`,
+          marks_obtained: Math.min(maxMarks, score),
+        });
+      }
     }
   }
 
@@ -757,7 +772,11 @@ async function seedData() {
   );
 
   const sgpaRows = sampleStudents.flatMap((student) => {
-    const semesterCourseRows = courseOfferingLookup.filter((offering) => offering.BRANCH === student.branch);
+    const semesterCourseRows = courseOfferingLookup.filter(
+      (offering) =>
+        offering.BRANCH === student.branch &&
+        Number(offering.SEMESTER) < Number(student.currentSemester ?? 0),
+    );
     const semesterGroups = new Map<number, typeof semesterCourseRows>();
 
     semesterCourseRows.forEach((offering) => {
