@@ -103,6 +103,7 @@ export default async function GpaPage() {
         <GpaCalculator
           defaultBranch={defaultBranch}
           defaultSemester={defaultSemester}
+          currentBranch={profile?.branch}
           currentSemester={profile?.currentSemester}
           currentCgpa={profile?.cgpa}
         />

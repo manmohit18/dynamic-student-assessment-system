@@ -18,7 +18,7 @@ const gradePoints: Record<string, number> = {
   F: 0,
 };
 
-const firstYearStreams = ["CS", "NONCS"] as const;
+const firstYearStreams = ["CSE", "NONCS"] as const;
 const firstYearCycles = ["PHY", "CHM"] as const;
 const honorsPattern = /honors/i;
 const upperSemesterOptions = Array.from(
@@ -29,11 +29,12 @@ const upperSemesterOptions = Array.from(
       .map(([, branch]) => branch),
   ),
 );
-const upperBranchOptions = upperSemesterOptions.filter((item) => item !== "CS");
+const upperBranchOptions = upperSemesterOptions.filter((item) => item !== "CSE");
 
 type GpaCalculatorProps = {
   defaultBranch?: string;
   defaultSemester?: number;
+  currentBranch?: string;
   currentSemester?: number;
   currentCgpa?: number;
 };
@@ -43,11 +44,11 @@ function clampSemester(value: number) {
 }
 
 function normalizeUpperBranch(branch: string) {
-  return branch === "CSE" ? "CS" : branch;
+  return branch === "CSE" ? "CSE" : branch;
 }
 
 function normalizeFirstYearStream(branch: string) {
-  return branch === "CSE" ? "CS" : "NONCS";
+  return branch === "CSE" ? "CSE" : "NONCS";
 }
 
 function isHonorsSubject(name: string) {
@@ -57,6 +58,7 @@ function isHonorsSubject(name: string) {
 export function GpaCalculator({
   defaultBranch = "CSE",
   defaultSemester = 4,
+  currentBranch,
   currentSemester,
   currentCgpa,
 }: GpaCalculatorProps) {
@@ -99,8 +101,18 @@ export function GpaCalculator({
   );
   const honorsEnabled = semesterNumber >= 7 && includeHonors;
   const selectionKey = `${semesterNumber}-${isFirstYear ? `${resolvedStream}-${resolvedCycle}` : resolvedBranch}-${honorsEnabled ? "honors" : "regular"}`;
+  const normalizedCurrentBranch = currentBranch ? normalizeUpperBranch(currentBranch) : null;
+  const branchMatchesCurrent = isFirstYear
+    ? true
+    : normalizedCurrentBranch !== null
+      ? resolvedBranch === normalizedCurrentBranch
+      : false;
   const projectedCgpa =
-    result !== null && currentSemester !== undefined && currentCgpa !== undefined && semesterNumber === currentSemester
+    result !== null &&
+    currentSemester !== undefined &&
+    currentCgpa !== undefined &&
+    semesterNumber === currentSemester &&
+    branchMatchesCurrent
       ? Number(((currentCgpa * Math.max(0, currentSemester - 1) + result) / Math.max(1, currentSemester)).toFixed(2))
       : null;
 
@@ -153,7 +165,7 @@ export function GpaCalculator({
             </div>
           ) : (
             <Select value={branch} onChange={(e) => setBranch(e.target.value)}>
-              <option value="CS">CSE</option>
+              <option value="CSE">CSE</option>
               {upperBranchOptions.map((item) => (
                 <option key={item} value={item}>
                   {item}

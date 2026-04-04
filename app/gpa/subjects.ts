@@ -1,7 +1,7 @@
 export const subjectData: {
   [SemCourse: string]: { [Subject: string]: number };
 } = {
-  "1-CS-PHY": {
+  "1-CSE-PHY": {
     "Computational Mathematics - 1": 4,
     "Applied Physics for Engineers": 3,
     "Fundamentals of Electronics": 3,
@@ -11,7 +11,7 @@ export const subjectData: {
     "Workshop Practice": 1,
     "Programming for Problem Solving Lab": 1,
   },
-  "2-CS-CHM": {
+  "2-CSE-CHM": {
     "Computational Mathematics - 2": 4,
     "Applied Chemistry for Engineers": 3,
     "Fundamentals of Electrical Engineering": 3,
@@ -22,7 +22,7 @@ export const subjectData: {
     "Introduction to Object Oriented Programming Lab": 1,
     "Computer Aided Engineering Graphics": 1,
   },
-  "1-CS-CHM": {
+  "1-CSE-CHM": {
     "Computational Mathematics - 1": 4,
     "Applied Chemistry for Engineers": 3,
     "Fundamentals of Electrical Engineering": 3,
@@ -32,7 +32,7 @@ export const subjectData: {
     "Programming for Problem Solving Lab": 1,
     "Computer Aided Engineering Graphics": 1,
   },
-  "2-CS-PHY": {
+  "2-CSE-PHY": {
     "Computational Mathematics - 2": 4,
     "Applied Physics for Engineers": 3,
     "Fundamentals of Electronics": 3,
@@ -43,7 +43,7 @@ export const subjectData: {
     "Workshop Practice": 1,
     "Introduction to Object Oriented Programming Lab": 1,
   },
-  "3-CS": {
+  "3-CSE": {
     "Discrete Mathematical Structures": 3,
     "Data Structures": 4,
     "Data Analytics": 4,
@@ -52,7 +52,7 @@ export const subjectData: {
     "Data Structures Lab": 1,
     "Digital Systems Lab": 1,
   },
-  "4-CS": {
+  "4-CSE": {
     "Probability and Optimization": 3,
     "Database Systems": 4,
     "Design & Analysis of Algorithms": 4,
@@ -62,7 +62,7 @@ export const subjectData: {
     "Database Systems Lab": 2,
     "Object-Oriented Software Development Lab": 2,
   },
-  "5-CS": {
+  "5-CSE": {
     "Essentials of Management": 3,
     "Principles of Cryptography": 3,
     "Operating Systems": 3,
@@ -72,7 +72,7 @@ export const subjectData: {
     "Operating Systems Lab": 1,
     "Computer Networks Lab": 1,
   },
-  "6-CS": {
+  "6-CSE": {
     "Engineering Economics and Financial Management": 3,
     "Compiler Design": 3,
     "Parallel Computer Architecture and Programming": 3,
@@ -82,7 +82,7 @@ export const subjectData: {
     "Program Elective - 1 (Minor Specialization)": 3,
     "Program Elective - 2 (Minor Specialization)": 3,
   },
-  "7-CS": {
+  "7-CSE": {
     "Program Elective - 3 (Minor Specialization)": 3,
     "Program Elective - 4 (Minor Specialization)": 3,
     "Program Elective - 5": 3,
@@ -90,7 +90,7 @@ export const subjectData: {
     "Program Elective - 7": 3,
     "Mini Project (Minor Specialization)": 8,
   },
-  "8-CS": {
+  "8-CSE": {
     "Project Work / Practice School": 12,
     "Project Work (B. Tech Honors)": 20,
     "B Tech Honors (Theory 1) (5 Semester)": 4,
