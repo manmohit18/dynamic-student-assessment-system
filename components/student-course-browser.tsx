@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CourseProgress, StudentProfile } from "@/lib/db-queries";
+import type { CourseProgress, StudentProfile } from "@/types/db-queries";
 
 type CourseDetail = {
   course: CourseProgress;
@@ -52,7 +52,7 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
         <Card>
           <CardHeader>
             <Badge className="w-fit">Current semester</Badge>
-            <CardTitle className="mt-2 text-3xl">Semester {profile.currentSemester} course cards</CardTitle>
+            <CardTitle className="mt-2 text-3xl">Semester {profile.currentSemester} courses</CardTitle>
             <CardDescription>Each card shows earned versus available marks so far.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -94,10 +94,7 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
                   <p className="mt-2 text-sm text-slate-600">
                     {detail.course.earnedRaw}/{detail.course.possibleRaw} raw marks earned so far.
                   </p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Status: {detail.course.status === "true" ? "Ongoing" : "Past"}
-                    {detail.course.finalGrade ? ` • Grade ${detail.course.finalGrade}` : ""}
-                  </p>
+
                 </div>
 
                 <div className="space-y-3">

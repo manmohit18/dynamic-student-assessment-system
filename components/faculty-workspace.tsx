@@ -190,7 +190,6 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
       <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <CardHeader>
             <CardTitle className="text-slate-900">Course list</CardTitle>
-          <CardDescription>Each card shows the progress snapshot for a faculty-owned offering.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {offerings.map((offering) => (

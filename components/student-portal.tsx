@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import type { StudentProfile, StudentSgpaRecord } from "@/lib/db-queries";
+import type { StudentProfile, StudentSgpaRecord } from "@/types/db-queries";
 import { ArrowUpRight, CalendarRange, GraduationCap, Trophy } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

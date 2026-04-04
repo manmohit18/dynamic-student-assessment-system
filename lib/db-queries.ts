@@ -1,63 +1,13 @@
 import oracledb from "oracledb";
 
 import { query, execute } from "@/lib/oracle";
-
-export type StudentProfile = {
-  email: string;
-  username: string;
-  branch: string;
-  currentSemester: number;
-  currentYear: number;
-  cgpa: number;
-  lastSgpa: number;
-};
-
-export type StudentSgpaRecord = {
-  semester: number;
-  academicYear: number;
-  gpa: number;
-};
-
-export type CourseProgress = {
-  courseOfferingId: number;
-  academicYear: number;
-  semester: number;
-  branch: string;
-  courseId: string;
-  courseTitle: string;
-  courseType: string;
-  credits: number;
-  earnedRaw: number;
-  possibleRaw: number;
-  weightedTotal: number;
-  finalGrade: string | null;
-  status: string;
-  facultyName: string;
-};
-
-export type CourseDetailAssessment = {
-  assessmentId: number;
-  assessmentType: string;
-  totalMarks: number;
-  weight: number;
-  assessmentDate: string | null;
-  marksObtained: number | null;
-};
-
-export type FacultyOffering = {
-  courseOfferingId: number;
-  academicYear: number;
-  semester: number;
-  branch: string;
-  courseId: string;
-  courseTitle: string;
-  courseType: string;
-  credits: number;
-  totalStudents: number;
-  averageMarks: number;
-  highestMarks: number;
-  lowestMarks: number;
-};
+import type {
+  CourseDetailAssessment,
+  CourseProgress,
+  FacultyOffering,
+  StudentProfile,
+  StudentSgpaRecord,
+} from "@/types/db-queries";
 
 function toNumber(value: unknown, fallback = 0) {
   if (typeof value === "number") return value;
@@ -108,6 +58,11 @@ export async function getStudentCourses(email: string): Promise<CourseProgress[]
         p.earned_raw,
         p.possible_raw,
         p.weighted_total,
+        NVL((
+          SELECT ROUND(SUM(a.weight), 2)
+          FROM assessment a
+          WHERE a.course_offering_id = p.course_offering_id
+        ), 0) AS total_weight,
         p.final_grade,
         p.status,
         p.faculty_name
@@ -130,6 +85,7 @@ export async function getStudentCourses(email: string): Promise<CourseProgress[]
     earnedRaw: toNumber(row.EARNED_RAW),
     possibleRaw: toNumber(row.POSSIBLE_RAW),
     weightedTotal: toNumber(row.WEIGHTED_TOTAL),
+    totalWeight: toNumber(row.TOTAL_WEIGHT),
     finalGrade: toStringOrNull(row.FINAL_GRADE),
     status: String(row.STATUS),
     facultyName: String(row.FACULTY_NAME),
@@ -169,6 +125,11 @@ export async function getCourseDetail(email: string, courseOfferingId: number) {
         p.earned_raw,
         p.possible_raw,
         p.weighted_total,
+        NVL((
+          SELECT ROUND(SUM(a.weight), 2)
+          FROM assessment a
+          WHERE a.course_offering_id = p.course_offering_id
+        ), 0) AS total_weight,
         p.final_grade,
         p.status,
         p.faculty_name
@@ -214,6 +175,7 @@ export async function getCourseDetail(email: string, courseOfferingId: number) {
       earnedRaw: toNumber(row.EARNED_RAW),
       possibleRaw: toNumber(row.POSSIBLE_RAW),
       weightedTotal: toNumber(row.WEIGHTED_TOTAL),
+      totalWeight: toNumber(row.TOTAL_WEIGHT),
       finalGrade: toStringOrNull(row.FINAL_GRADE),
       status: String(row.STATUS),
       facultyName: String(row.FACULTY_NAME),

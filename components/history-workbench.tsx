@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CourseDetailAssessment, CourseProgress, StudentProfile } from "@/lib/db-queries";
+import type { CourseDetailAssessment, CourseProgress, StudentProfile } from "@/types/db-queries";
 
 type CourseDetail = {
   course: CourseProgress;
@@ -195,7 +195,7 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                             key={course.courseOfferingId}
                             type="button"
                             onClick={() => setSelectedId(course.courseOfferingId)}
-                            className={`group rounded-[1.4rem] border p-4 text-left transition-colors ${
+                            className={`group rounded-[1.4rem] border p-4 text-left transition-colors cursor-pointer ${
                               active
                                 ? "border-amber-300/60 bg-amber-50"
                                 : "border-stone-200 bg-white hover:border-stone-300"
@@ -233,9 +233,9 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                                 </p>
                               </div>
                               <div className="text-right">
-                                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Raw</p>
+                                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Score</p>
                                 <p className="mt-1 text-sm text-slate-800">
-                                  {course.earnedRaw}/{course.possibleRaw}
+                                  {course.weightedTotal}/{course.totalWeight}
                                 </p>
                               </div>
                             </div>
@@ -260,11 +260,6 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
             <CardTitle className="mt-2 text-3xl font-serif text-slate-900">
               {selectedCourse?.courseTitle ?? "Select a course"}
             </CardTitle>
-            <CardDescription>
-              {selectedCourse
-                ? `Open ${selectedCourse.courseId} to inspect the marks behind the transcript entry.`
-                : "Pick a completed course from the archive to load its assessment marks."}
-            </CardDescription>
           </CardHeader>
           <CardContent>
             {selectedCourse ? (
@@ -281,14 +276,10 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                     <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Transcript summary</p>
                     <div className="mt-3 flex items-end justify-between gap-4">
                       <div>
-                        <p className="text-sm text-slate-600">Raw marks earned</p>
+                        <p className="text-sm text-slate-600">Score</p>
                         <p className="mt-1 text-3xl font-semibold text-slate-900">
-                          {detail.course.earnedRaw}/{detail.course.possibleRaw}
+                          {detail.course.weightedTotal}/{detail.course.totalWeight}
                         </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-slate-600">Weighted total</p>
-                        <p className="mt-1 text-3xl font-semibold text-amber-700">{detail.course.weightedTotal}</p>
                       </div>
                     </div>
                   </div>

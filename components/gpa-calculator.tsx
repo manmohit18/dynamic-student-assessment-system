@@ -137,7 +137,6 @@ export function GpaCalculator({
           </div>
           <div>
             <CardTitle className="text-2xl text-slate-900">GPA calculator</CardTitle>
-            <p className="text-sm text-slate-600">Plan a semester outcome without losing the current academic context.</p>
           </div>
         </div>
 
