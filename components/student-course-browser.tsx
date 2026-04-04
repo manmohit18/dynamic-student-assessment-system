@@ -126,44 +126,6 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
           </CardContent>
         </Card>
       </section>
-
-      <section className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Semester tools</CardTitle>
-            <CardDescription>History and GPA planning live on separate pages now.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            <Button asChild variant="secondary">
-              <Link href="/history">
-                Past semesters
-                <CalendarRange className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/gpa">
-                GPA calculator
-                <GraduationCap className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Back to overview</CardTitle>
-            <CardDescription>Return to the compact profile dashboard.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/">
-                Open home
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
     </main>
   );
 }

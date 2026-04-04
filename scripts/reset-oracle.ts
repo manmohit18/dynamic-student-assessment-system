@@ -614,12 +614,13 @@ async function seedData() {
     if (!course) continue;
 
     const plan = assessmentPlan(course.type);
+    const assessmentMonth = String(Math.min(12, Number(offering.SEMESTER) * 2)).padStart(2, "0");
     plan.forEach((item, index) => {
       assessmentRows.push({
         assessment_type: item.label,
         total_marks: item.totalMarks,
         weight: item.weight,
-        assessment_date: `2024-0${Math.min(9, Number(offering.SEMESTER) + 1)}-${String(10 + index * 5).padStart(2, "0")}`,
+        assessment_date: `${Number(offering.ACADEMIC_YEAR)}-${assessmentMonth}-${String(10 + index * 5).padStart(2, "0")}`,
         course_offering_id: Number(offering.COURSE_OFFERING_ID),
       });
     });
@@ -721,6 +722,7 @@ async function seedData() {
 
       for (const assessment of seededAssessments) {
         const maxMarks = Number(assessment.TOTAL_MARKS);
+        const assessmentMonth = String(Math.min(12, Number(relatedOffering.SEMESTER) * 2)).padStart(2, "0");
         const seed =
           student.index * 1000 +
           Number(relatedOffering.SEMESTER) * 100 +
@@ -733,7 +735,7 @@ async function seedData() {
         attemptRows.push({
           student_mail: student.email,
           assessment_id: Number(assessment.ASSESSMENT_ID),
-          attempt_date: `2024-${String(Number(relatedOffering.SEMESTER)).padStart(2, "0")}-${String(10 + (seed % 15)).padStart(2, "0")}`,
+          attempt_date: `${Number(relatedOffering.ACADEMIC_YEAR)}-${assessmentMonth}-${String(10 + (seed % 15)).padStart(2, "0")}`,
           marks_obtained: Math.min(maxMarks, score),
         });
       }

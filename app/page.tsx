@@ -8,9 +8,8 @@ import { LoginPanel } from "@/components/login-panel";
 import { PortalHeader } from "@/components/portal-header";
 import { StudentPortal } from "@/components/student-portal";
 import { FacultyWorkspace } from "@/components/faculty-workspace";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "@/components/icons";
+import { ArrowRight, BookOpenText, Sparkles } from "@/components/icons";
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -18,45 +17,58 @@ export default async function Home() {
 
   if (!session) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-10 px-4 py-8 sm:px-6 lg:px-8">
-        <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-300">
-              <Sparkles className="h-4 w-4 text-amber-300" />
-              Oracle course performance system
+      <main className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-8 sm:px-6 lg:px-8">
+        <div className="absolute inset-x-0 top-0 -z-10 h-96 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.1),transparent_26%)]" />
+        <section className="grid w-full gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
+          <div className="space-y-7">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-300">
+                <Sparkles className="h-4 w-4 text-amber-300" />
+                Oracle course portal
+              </div>
+              <h1 className="max-w-3xl text-5xl font-semibold leading-tight text-white sm:text-6xl">
+                Marks, semesters, and course history in one place.
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-slate-300">
+                The portal stays focused on the academic record. No clutter, no filler, just the current course view,
+                history, and GPA planning backed by Oracle.
+              </p>
             </div>
-            <h1 className="max-w-3xl text-5xl font-semibold leading-tight text-white sm:text-6xl">
-              Oracle-backed course portal for marks, grades, and uploads.
-            </h1>
-            <p className="max-w-2xl text-lg text-slate-300">
-              The database owns the grading logic. The frontend only reads the stored procedures, functions, and
-              views from the Oracle schema.
-            </p>
 
             <div className="flex flex-wrap gap-3">
               <ButtonLink href="/courses">Browse courses</ButtonLink>
-              <ButtonLink href="/gpa" variant="outline">
-                GPA calculator
-              </ButtonLink>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Seeded student login</CardTitle>
-                  <CardDescription>cse.student@college.edu / Student@123</CardDescription>
-                </CardHeader>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Seeded faculty login</CardTitle>
-                  <CardDescription>faculty.cse@college.edu / Faculty@123</CardDescription>
-                </CardHeader>
-              </Card>
+            <div className="flex flex-wrap gap-3 text-sm text-slate-300">
+              <Pill>Seeded student login: cse.student@college.edu</Pill>
+              <Pill>Seeded faculty login: faculty.cse@college.edu</Pill>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <MiniStat label="Student record" value="CGPA, SGPA, transcript" />
+              <MiniStat label="Course data" value="Current and past offerings" />
+              <MiniStat label="Faculty tools" value="Marks and uploads" />
             </div>
           </div>
 
-          <LoginPanel />
+          <div className="space-y-4">
+            <div className="rounded-4xl border border-white/10 bg-slate-950/70 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-8">
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-400 text-slate-950">
+                  <BookOpenText className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Oracle-backed workflow</p>
+                  <p className="text-lg font-medium text-white">Open the portal, then log in</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-slate-300">
+                Students land on a compact dashboard. Faculty move straight into marks and offerings.
+              </p>
+            </div>
+
+            <LoginPanel />
+          </div>
         </section>
       </main>
     );
@@ -107,5 +119,18 @@ function ButtonLink({
         <ArrowRight className="ml-2 h-4 w-4" />
       </Link>
     </Button>
+  );
+}
+
+function Pill({ children }: { children: ReactNode }) {
+  return <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">{children}</span>;
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{label}</p>
+      <p className="mt-2 text-sm leading-6 text-white">{value}</p>
+    </div>
   );
 }

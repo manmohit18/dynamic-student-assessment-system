@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { subjectData } from "@/app/gpa/subjects";
 import { Calculator } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 
 const gradePoints: Record<string, number> = {
@@ -34,6 +34,8 @@ const upperBranchOptions = upperSemesterOptions.filter((item) => item !== "CS");
 type GpaCalculatorProps = {
   defaultBranch?: string;
   defaultSemester?: number;
+  currentSemester?: number;
+  currentCgpa?: number;
 };
 
 function clampSemester(value: number) {
@@ -52,7 +54,12 @@ function isHonorsSubject(name: string) {
   return honorsPattern.test(name);
 }
 
-export function GpaCalculator({ defaultBranch = "CSE", defaultSemester = 4 }: GpaCalculatorProps) {
+export function GpaCalculator({
+  defaultBranch = "CSE",
+  defaultSemester = 4,
+  currentSemester,
+  currentCgpa,
+}: GpaCalculatorProps) {
   const [semester, setSemester] = useState(String(clampSemester(defaultSemester)));
   const [branch, setBranch] = useState(() => normalizeUpperBranch(defaultBranch));
   const [stream, setStream] = useState(() => normalizeFirstYearStream(defaultBranch));
@@ -92,6 +99,10 @@ export function GpaCalculator({ defaultBranch = "CSE", defaultSemester = 4 }: Gp
   );
   const honorsEnabled = semesterNumber >= 7 && includeHonors;
   const selectionKey = `${semesterNumber}-${isFirstYear ? `${resolvedStream}-${resolvedCycle}` : resolvedBranch}-${honorsEnabled ? "honors" : "regular"}`;
+  const projectedCgpa =
+    result !== null && currentSemester !== undefined && currentCgpa !== undefined && semesterNumber === currentSemester
+      ? Number(((currentCgpa * Math.max(0, currentSemester - 1) + result) / Math.max(1, currentSemester)).toFixed(2))
+      : null;
 
   function calculate() {
     const visibleSubjects = honorsEnabled ? subjectEntries : regularSubjectEntries;
@@ -112,7 +123,6 @@ export function GpaCalculator({ defaultBranch = "CSE", defaultSemester = 4 }: Gp
           <Calculator className="h-5 w-5 text-amber-300" />
           <CardTitle>GPA calculator</CardTitle>
         </div>
-        <CardDescription>Pick a semester, then choose the matching stream, cycle, or branch before testing grades.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -237,7 +247,20 @@ export function GpaCalculator({ defaultBranch = "CSE", defaultSemester = 4 }: Gp
         {result !== null && calculatedFor === selectionKey ? (
           <div className="mt-4 rounded-3xl border border-emerald-400/25 bg-emerald-400/10 p-5 text-center">
             <p className="text-xs uppercase tracking-[0.3em] text-emerald-200">Projected GPA</p>
-            <p className="mt-2 text-4xl font-semibold text-white">{result}</p>
+            {projectedCgpa !== null ? (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 sm:text-left">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center sm:text-left">
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-300">Predicted SGPA</p>
+                  <p className="mt-2 text-4xl font-semibold text-white">{result}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center sm:text-left">
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-300">Predicted CGPA</p>
+                  <p className="mt-2 text-4xl font-semibold text-white">{projectedCgpa}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-2 text-4xl font-semibold text-white">{result}</p>
+            )}
           </div>
         ) : null}
       </CardContent>

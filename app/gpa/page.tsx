@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 
-import { decodeSession } from "@/lib/auth";
-import { getStudentProfile } from "@/lib/db-queries";
 import { GpaCalculator } from "@/components/gpa-calculator";
 import { LoginPanel } from "@/components/login-panel";
 import { PortalHeader } from "@/components/portal-header";
+import { decodeSession } from "@/lib/auth";
+import { getStudentProfile } from "@/lib/db-queries";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowUpRight, BookOpen, CalendarRange, ClipboardList, Sparkles, type LucideIcon } from "lucide-react";
 
 export default async function GpaPage() {
   const cookieStore = await cookies();
@@ -15,22 +17,75 @@ export default async function GpaPage() {
 
   if (!session) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-8 sm:px-6 lg:px-8">
-        <section className="grid w-full gap-8 lg:grid-cols-[0.95fr_0.85fr] lg:items-center">
-          <Card className="border-white/10 bg-white/5">
-            <CardHeader>
-              <CardTitle className="text-3xl text-white">GPA calculator</CardTitle>
-              <CardDescription>
-                Sign in to use the planner with your branch and semester defaults.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm text-slate-300">
-              <p>Use this page to estimate your semester GPA from hypothetical grade combinations.</p>
-              <Button asChild variant="secondary">
-                <Link href="/">Back to home</Link>
-              </Button>
-            </CardContent>
-          </Card>
+      <main className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-8 sm:px-6 lg:px-8">
+        <div className="absolute inset-x-0 top-0 -z-10 h-80 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.12),transparent_24%)]" />
+        <section className="grid w-full gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="space-y-6">
+            <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-slate-950/70 p-7 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-9">
+              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-300/10 blur-3xl" />
+              <div className="relative space-y-5">
+                <Badge className="w-fit border-amber-300/20 bg-amber-300/10 text-amber-100">
+                  <Sparkles className="mr-2 h-3.5 w-3.5" />
+                  GPA planning studio
+                </Badge>
+                <div className="space-y-3">
+                  <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-white sm:text-5xl">
+                    Forecast a semester GPA with the actual catalog, not guesswork.
+                  </h1>
+                  <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+                    Sign in to load your branch and semester defaults. The calculator mirrors the Oracle-backed subject
+                    structure so you can test grade combinations before they exist in the transcript.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <InfoCard icon={BookOpen} label="Catalog aware" value="Branch-matched" />
+                  <InfoCard icon={CalendarRange} label="Semester ready" value="Defaults loaded" />
+                  <InfoCard icon={ClipboardList} label="Oracle backed" value="Real weights" />
+                </div>
+
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <Button asChild variant="secondary">
+                    <Link href="/courses">
+                      Current courses
+                      <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/history">
+                      Past semesters
+                      <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <Card className="bg-slate-950/60">
+              <CardHeader>
+                <CardTitle>How the calculator behaves</CardTitle>
+                <CardDescription>Designed to keep planning readable even on small screens.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-3">
+                <StepCard
+                  index="01"
+                  title="Pick a semester"
+                  body="Switch between first-year cycles and upper-semester branches."
+                />
+                <StepCard
+                  index="02"
+                  title="Assign grades"
+                  body="Enter the grade you want to test for every subject."
+                />
+                <StepCard
+                  index="03"
+                  title="Read the projection"
+                  body="Get the weighted result instantly from the catalog."
+                />
+              </CardContent>
+            </Card>
+          </div>
+
           <LoginPanel />
         </section>
       </main>
@@ -44,26 +99,36 @@ export default async function GpaPage() {
   return (
     <>
       <PortalHeader name={profile?.username ?? session.email} role={session.role} />
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-        <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle>GPA calculator</CardTitle>
-              <CardDescription>
-                Estimate a semester GPA by assigning grades to each course in the catalog.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-slate-300">
-              <p>The calculator is separated from the dashboard so the home page stays focused on academic status.</p>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/courses">View courses</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <GpaCalculator defaultBranch={defaultBranch} defaultSemester={defaultSemester} />
-        </section>
+      <main className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <GpaCalculator
+          defaultBranch={defaultBranch}
+          defaultSemester={defaultSemester}
+          currentSemester={profile?.currentSemester}
+          currentCgpa={profile?.cgpa}
+        />
       </main>
     </>
+  );
+}
+
+function InfoCard({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return (
+    <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4 backdrop-blur">
+      <div className="flex items-center gap-2 text-slate-400">
+        <Icon className="h-4 w-4 text-amber-300" />
+        <span className="text-xs uppercase tracking-[0.3em]">{label}</span>
+      </div>
+      <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function StepCard({ index, title, body }: { index: string; title: string; body: string }) {
+  return (
+    <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4">
+      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{index}</p>
+      <p className="mt-3 text-base font-medium text-white">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-300">{body}</p>
+    </div>
   );
 }
