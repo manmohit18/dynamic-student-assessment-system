@@ -1,0 +1,403 @@
+Abstract:
+The project aims to design and implement a database-driven system to record, manage, and
+evaluate student performance in a course. The system supports dynamic assessment
+structures, allowing instructors to add or modify assignments, quizzes, or exams at any point
+during the course lifecycle without requiring schema redesign. Each assessment component
+can have an associated weight, and the system computes weighted total marks for every
+student. Additionally, the system supports flexible grading policies by allowing instructors to
+define and update grade cutoffs dynamically. The Oracle DBMS serves as the core of the
+system, ensuring data consistency, enforcing integrity constraints, and efficiently performing
+aggregate computations required for grading and performance analysis.
+Requirement Specifications:
+REQ 1: The system shall store records for Students, Courses, Assessment Components, Marks,
+and Grading Policies, supporting a variable number of assessments per course without
+predefined limits.
+REQ 2: The system shall allow instructors to dynamically add, update, or remove assessment
+components (e.g., Assignments, Quizzes, Exams) along with their weightages, with changes
+reflected automatically in total score computations.
+REQ 3: The system shall compute weighted total course marks for each student using SQL
+aggregation queries, ensuring that the sum of assessment weights is validated at the database
+level.
+REQ 4: The system shall support flexible grading by allowing instructors to define grade cutoff
+ranges (e.g., A ≥ 85, B ≥ 70), which can be modified without recalculating stored marks.
+REQ 5: The system shall assign final grades to students based on computed total marks and
+defined cutoffs, implemented using database views or stored procedures.
+REQ 6: The system shall enforce data integrity constraints to prevent invalid mark entries (e.g.,
+marks exceeding maximum limits) using CHECK constraints, triggers, or stored procedures.
+REQ 7: The system shall generate performance reports such as class averages, highest and
+lowest scores using SQL aggregate and grouping operations.
+
+REDUCTION TO RELATION SCHEMA
+
+Here is the detailed reduction to the database schema, followed by a discussion on design alternatives and normalization.
+
+i. Reducing the ER Diagram to Database Schema
+The reduction follows the standard mapping of entities, relationships, and attributes into a relational model.
+Step 1: Strong Entities
+These entities exist independently.
+•	STUDENT (email, username, password_hash, branch, graduation_year, current_semester, current_year, role)
+•	COURSE (course_id, title, course_type, credits, department)
+•	FACULTY (faculty_id, name, email, password_hash, department)
+•	COURSE_OFFERING (course_offering_id, academic_year, semester, status, branch, course_id, faculty_id)
+•	ASSESSMENT (assessment_id, assessment_type, total_marks, weight, assessment_date, course_offering_id)
+•	GRADE_CUTOFFS (cutoff_id, grade, min_marks, max_marks, course_offering_id)
+•	SGPA (student_id, semester, academic_year, gpa)
+
+
+STEP 2: Map Relationship Sets
+For each relationship, the schema contains the PKs of the participating entities plus any relationship attributes.
+•	TEACHES(facultyID, courseOfferingID)
+
+•	OFFERED(courseID, courseOfferingID)
+
+•	HAS(courseOfferingID, assessmentID)
+
+•	DEFINES(courseOfferingID, cutoffID)
+
+•	ATTENDS(student_mail, course_offering_id, enrollment_date, status, final_grade)
+
+•	ATTEMPTS(student_mail, assessment_id, attempt_date, marks_obtained)
+
+•	OBTAINS(studentID, semester, year)
+
+STEP 3: Weak Entity Sets
+•	No weak entities in  design
+
+STEP 4: Eliminate Duplicate Relationship Schema
+•	No duplicates.
+STEP 5: Merge Many-to-One Relationships (Total Participation)
+We merge the relationship attributes into the "many-side" entity to reduce the total number of tables.
+•	Merge OFFERED and TEACHES  into COURSE_OFFERING
+              COURSE_OFFERING (course_offering_id, academic_year, semester, status, branch, course_id, faculty_id)
+            Therefore Remove OFFERED AND TEACHES
+
+•	Merge HAS into ASSESSMENT
+
+    ASSESSMENT(assessment_id, assessment_type, total_marks, weight, assessment_date, course_offering_id)
+
+    Therefore Remove HAS
+
+•	Merge DEFINES into GRADE_CUTOFFS
+              GRADE_CUTOFFS(cutoff_id, grade, min_marks, max_marks, course_offering_id)
+Therefore Remove DEFINES
+
+•	Merge OBTAINS into SGPA
+
+    SGPA(student_id, semester, academic_year, gpa)
+
+            Therefore Remove OBTAINS
+STEP 6: Final Schema
+The resulting schema is optimized and satisfies all project requirements.
+•	STUDENT (email, username, password_hash, branch, graduation_year, current_semester, current_year, role)
+•	COURSE (course_id, title, course_type, credits, department)
+•	FACULTY (faculty_id, name, email, password_hash, department)
+•	COURSE_OFFERING (course_offering_id, academic_year, semester, status, branch, course_id, faculty_id)
+•	ASSESSMENT (assessment_id, assessment_type, total_marks, weight, assessment_date, course_offering_id)
+•	GRADE_CUTOFFS (cutoff_id, grade, min_marks, max_marks, course_offering_id)
+•	SGPA (student_id, semester, academic_year, gpa)
+•	ATTENDS (student_mail, course_offering_id, enrollment_date, status, final_grade)
+•	ATTEMPTS (student_mail, assessment_id, attempt_date, marks_obtained)
+
+
+
+
+SQL QUERIES
+
+•	1. DDL COMMANDS (CREATE TABLE)
+
+CREATE TABLE STUDENT (
+    email VARCHAR2(255) PRIMARY KEY,
+    username VARCHAR2(120) NOT NULL,
+    password_hash VARCHAR2(255) NOT NULL,
+    branch VARCHAR2(20) NOT NULL,
+    graduation_year NUMBER(4) NOT NULL,
+    current_semester NUMBER(2) NOT NULL,
+    current_year NUMBER(4) NOT NULL,
+    role VARCHAR2(20) DEFAULT 'student' NOT NULL
+);
+
+CREATE TABLE FACULTY (
+    faculty_id NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    name VARCHAR2(120) NOT NULL,
+    email VARCHAR2(255) NOT NULL UNIQUE,
+    password_hash VARCHAR2(255) NOT NULL,
+    department VARCHAR2(20) NOT NULL
+);
+
+CREATE TABLE COURSE (
+    course_id VARCHAR2(20) PRIMARY KEY,
+    title VARCHAR2(255) NOT NULL,
+    course_type VARCHAR2(20) NOT NULL,
+    credits NUMBER(2) NOT NULL,
+    department VARCHAR2(20) NOT NULL
+);
+
+CREATE TABLE COURSE_OFFERING (
+    course_offering_id NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    academic_year NUMBER(4) NOT NULL,
+    semester NUMBER(2) NOT NULL,
+    status VARCHAR2(20) DEFAULT 'current' NOT NULL,
+    branch VARCHAR2(20) NOT NULL,
+    course_id VARCHAR2(20) NOT NULL,
+    faculty_id NUMBER NOT NULL,
+    CONSTRAINT fk_course_offering_course FOREIGN KEY (course_id) REFERENCES course(course_id),
+    CONSTRAINT fk_course_offering_faculty FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id)
+);
+
+CREATE TABLE ASSESSMENT (
+    assessment_id NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    assessment_type VARCHAR2(60) NOT NULL,
+    total_marks NUMBER(4) NOT NULL,
+    weight NUMBER(5,2) NOT NULL,
+    assessment_date DATE DEFAULT SYSDATE NOT NULL,
+    course_offering_id NUMBER NOT NULL,
+    CONSTRAINT fk_assessment_course_offering FOREIGN KEY (course_offering_id)
+      REFERENCES course_offering(course_offering_id)
+);
+
+CREATE TABLE GRADE_CUTOFFS (
+    cutoff_id NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    grade VARCHAR2(3) NOT NULL,
+    min_marks NUMBER(5,2) NOT NULL,
+    max_marks NUMBER(5,2) NOT NULL,
+    course_offering_id NUMBER NOT NULL,
+    CONSTRAINT fk_cutoff_course_offering FOREIGN KEY (course_offering_id)
+      REFERENCES course_offering(course_offering_id)
+);
+
+CREATE TABLE SGPA (
+    student_id VARCHAR2(255) NOT NULL,
+    semester NUMBER(2) NOT NULL,
+    academic_year NUMBER(4) NOT NULL,
+    gpa NUMBER(4,2) NOT NULL,
+    CONSTRAINT pk_sgpa PRIMARY KEY (student_id, semester, academic_year),
+    CONSTRAINT fk_sgpa_student FOREIGN KEY (student_id) REFERENCES student(email)
+);
+
+CREATE TABLE ATTENDS (
+    student_mail VARCHAR2(255) NOT NULL,
+    course_offering_id NUMBER NOT NULL,
+    enrollment_date DATE NOT NULL,
+    status VARCHAR2(20) NOT NULL,
+    final_grade VARCHAR2(3),
+    CONSTRAINT pk_attends PRIMARY KEY (student_mail, course_offering_id),
+    CONSTRAINT fk_attends_student FOREIGN KEY (student_mail) REFERENCES student(email),
+    CONSTRAINT fk_attends_course_offering FOREIGN KEY (course_offering_id)
+      REFERENCES course_offering(course_offering_id)
+);
+
+CREATE TABLE ATTEMPTS (
+    student_mail VARCHAR2(255) NOT NULL,
+    assessment_id NUMBER NOT NULL,
+    attempt_date DATE NOT NULL,
+    marks_obtained NUMBER(5,2) NOT NULL,
+    CONSTRAINT pk_attempts PRIMARY KEY (student_mail, assessment_id),
+    CONSTRAINT fk_attempts_student FOREIGN KEY (student_mail) REFERENCES student(email),
+    CONSTRAINT fk_attempts_assessment FOREIGN KEY (assessment_id) REFERENCES assessment(assessment_id)
+);
+
+•	2. INSERT SAMPLE DATA (2 rows each)
+
+INSERT INTO STUDENT VALUES ('s1@mail.com', 'Alice', 2025);
+INSERT INTO STUDENT VALUES ('s2@mail.com', 'Bob', 2025);
+
+INSERT INTO FACULTY VALUES (1, 'Dr Smith', 'smith@mail.com');
+INSERT INTO FACULTY VALUES (2, 'Dr John', 'john@mail.com');
+
+INSERT INTO COURSE VALUES (101, 'DBMS', 'Core', 4, 'CSE');
+INSERT INTO COURSE VALUES (102, 'OS', 'Core', 4, 'CSE');
+
+INSERT INTO COURSE_OFFERING VALUES (1, 2024, 1, 'CSE', 101, 1);
+INSERT INTO COURSE_OFFERING VALUES (2, 2024, 1, 'CSE', 102, 2);
+
+INSERT INTO ASSESSMENT VALUES (1, 'Quiz', 20, 20, 1);
+INSERT INTO ASSESSMENT VALUES (2, 'Midterm', 50, 50, 1);
+
+INSERT INTO GRADE_CUTOFFS VALUES (1, 'A', 85, 100, 1);
+INSERT INTO GRADE_CUTOFFS VALUES (2, 'B', 70, 84, 1);
+
+INSERT INTO SGPA VALUES ('s1@mail.com', 1, 2024, 8.5);
+INSERT INTO SGPA VALUES ('s2@mail.com', 1, 2024, 7.8);
+
+INSERT INTO ATTENDS VALUES ('s1@mail.com', 1, DATE '2024-01-10', 'Active');
+INSERT INTO ATTENDS VALUES ('s2@mail.com', 1, DATE '2024-01-10', 'Active');
+
+INSERT INTO ATTEMPTS VALUES ('s1@mail.com', 1, DATE '2024-02-01', 18);
+INSERT INTO ATTEMPTS VALUES ('s2@mail.com', 1, DATE '2024-02-01', 15);
+
+•	3. IMPORTANT QUERIES
+
+
+1.	Compute Total Weighted Marks
+SELECT
+    a.studentMail,
+    SUM((a.marksObtained / b.totalMarks) * b.weight) AS total_score
+FROM ATTEMPTS a
+JOIN ASSESSMENT b ON a.assessmentID = b.assessmentID
+GROUP BY a.studentMail;
+2.	Assign Grades
+
+SELECT
+    t.studentMail,
+    t.total_score,
+    g.grade
+FROM (
+    SELECT
+        a.studentMail,
+        SUM((a.marksObtained / b.totalMarks) * b.weight) AS total_score
+    FROM ATTEMPTS a
+    JOIN ASSESSMENT b ON a.assessmentID = b.assessmentID
+    GROUP BY a.studentMail
+) t
+JOIN GRADE_CUTOFFS g
+ON t.total_score BETWEEN g.minMarks AND g.maxMarks;
+
+
+Compute weighted total + validate weights
+
+CREATE TRIGGER check_weight
+BEFORE INSERT ON ASSESSMENT
+FOR EACH ROW
+BEGIN
+DECLARE total INT;
+
+SELECT IFNULL(SUM(weight),0) INTO total
+FROM ASSESSMENT
+WHERE courseOfferingID = NEW.courseOfferingID;
+
+IF total + NEW.weight > 100 THEN
+SIGNAL SQLSTATE '45000'
+SET MESSAGE_TEXT = 'Total weight exceeds 100';
+END IF;
+END;
+
+
+3	.Class Report
+SELECT
+    AVG(marksObtained) AS average,
+    MAX(marksObtained) AS highest,
+    MIN(marksObtained) AS lowest
+FROM ATTEMPTS;
+
+
+
+
+4. TRIGGERS
+
+•	Trigger: Prevent invalid marks
+
+CREATE OR REPLACE TRIGGER check_marks
+BEFORE INSERT ON ATTEMPTS
+FOR EACH ROW
+DECLARE
+    maxMarks NUMBER;
+BEGIN
+    SELECT totalMarks INTO maxMarks
+    FROM ASSESSMENT
+    WHERE assessmentID = :NEW.assessmentID;
+
+    IF :NEW.marksObtained > maxMarks THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Marks exceed maximum limit');
+    END IF;
+END;
+/
+•	Weight Constraint Trigger
+
+CREATE OR REPLACE TRIGGER check_weight
+BEFORE INSERT ON ASSESSMENT
+FOR EACH ROW
+DECLARE
+    totalWeight NUMBER;
+BEGIN
+    SELECT NVL(SUM(weight),0) INTO totalWeight
+    FROM ASSESSMENT
+    WHERE courseOfferingID = :NEW.courseOfferingID;
+
+    IF totalWeight + :NEW.weight > 100 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Total weight exceeds 100');
+    END IF;
+END;
+/
+3.	PROCEDURES
+Procedure: Get Student Total Marks
+
+	CREATE OR REPLACE PROCEDURE GetTotalMarks(p_student VARCHAR2)
+IS
+total_score NUMBER;
+BEGIN
+SELECT SUM((a.marksObtained / b.totalMarks) * b.weight)
+INTO total_score
+FROM ATTEMPTS a
+JOIN ASSESSMENT b ON a.assessmentID = b.assessmentID
+WHERE a.studentMail = p_student;
+
+DBMS_OUTPUT.PUT_LINE('Total Score: ' || total_score);
+END;
+/
+
+Class Report Procedure
+
+CREATE OR REPLACE PROCEDURE ClassReport
+IS
+    avg_marks NUMBER;
+    high NUMBER;
+    low NUMBER;
+BEGIN
+    SELECT AVG(marksObtained), MAX(marksObtained), MIN(marksObtained)
+    INTO avg_marks, high, low
+    FROM ATTEMPTS;
+
+    DBMS_OUTPUT.PUT_LINE('Average: ' || avg_marks);
+    DBMS_OUTPUT.PUT_LINE('Highest: ' || high);
+    DBMS_OUTPUT.PUT_LINE('Lowest: ' || low);
+END;
+/
+
+6. FUNCTION
+
+Get Grade Function
+
+CREATE OR REPLACE FUNCTION GetGrade(
+score NUMBER,
+cid NUMBER
+) RETURN CHAR
+IS
+g CHAR(2);
+BEGIN
+SELECT grade INTO g
+FROM GRADE_CUTOFFS
+WHERE score BETWEEN minMarks AND maxMarks
+AND courseOfferingID = cid
+AND ROWNUM = 1;
+
+RETURN g;
+END;
+/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
