@@ -374,6 +374,170 @@ RETURN g;
 END;
 /
 
+iii. Discuss design alternatives and normal form of the derived schema in detail. In case the implementation follows a different schema highlight it clearly here with necessary justifications
+
+
+Design Alternatives
+
+1. Redundancy
+
+Alternative Design (High Redundancy)
+•	Store multiple derived aggregates (total marks, weighted score, grade) in separate result tables.
+•	Keep duplicated course/faculty/student data in transaction rows.
+
+Current Design (Mostly Normalized, Controlled Denormalization)
+•	Weighted totals are still computed from ATTEMPTS + ASSESSMENT when needed.
+•	final_grade is stored in ATTENDS as a controlled denormalized field for fast retrieval and stable display.
+•	This stored grade is recomputed on marks updates and cutoff updates through backend logic.
+
+Justification
+•	Most schema remains normalized.
+•	One intentional denormalized attribute (final_grade) improves read performance and UX while preserving consistency through recomputation.
+
+2. Incompleteness
+
+Alternative Design (Incomplete)
+•	Missing offering lifecycle/status tracking.
+•	Missing persisted final grade state per enrollment.
+
+Current Design (Complete for Implemented Features)
+Includes:
+•	STUDENT, FACULTY, COURSE, COURSE_OFFERING
+•	ASSESSMENT, ATTEMPTS, ATTENDS
+•	GRADE_CUTOFFS, SGPA
+•	Offering status in COURSE_OFFERING.status
+•	Stored enrollment grade in ATTENDS.final_grade
+
+Justification
+•	The schema supports current vs archived offerings, incremental assessment completion, dynamic cutoff updates, and persisted final grade outcomes.
+
+3. Decomposition
+
+Poor Design (No Decomposition)
+STUDENT_COURSE_DATA(
+    studentID,
+    courseID,
+    facultyName,
+    assessmentType,
+    marks,
+    grade
+)
+
+Current Design (Proper Decomposition)
+Split across normalized relations:
+•	STUDENT
+•	FACULTY
+•	COURSE
+•	COURSE_OFFERING
+•	ASSESSMENT
+•	ATTEMPTS
+•	ATTENDS
+•	GRADE_CUTOFFS
+•	SGPA
+
+Justification
+•	This decomposition reduces duplication and keeps transactional updates local to relevant entities.
+
+Normalization of Derived Schema
+
+🔹 First Normal Form (1NF)
+ Condition:
+•	All attributes are atomic
+•	No repeating groups or multivalued attributes
+
+ Verification:
+•	Each column contains a single value
+•	No repeating columns like Quiz1, Quiz2
+ Example:
+marksObtained = single value
+
+ Conclusion:
+ Schema is in 1NF
+
+🔹 Second Normal Form (2NF)
+ Condition:
+•	Must be in 1NF
+•	No partial dependency on composite keys
+
+ Verification:
+Example:
+ATTEMPTS(student_mail, assessment_id → marks_obtained, attempt_date)
+•	marks depends on full composite key
+ATTENDS(student_mail, course_offering_id → status, enrollment_date, final_grade)
+•	fully dependent
+
+ Conclusion:
+ Schema is in 2NF
+
+🔹 Third Normal Form (3NF)
+ Condition:
+•	Must be in 2NF
+•	No transitive dependency
+
+ Verification:
+•	COURSE attributes are separated from COURSE_OFFERING.
+•	ASSESSMENT attributes are separated from ATTEMPTS.
+•	GRADE_CUTOFFS is separated from ATTENDS/ATTEMPTS.
+•	No non-key attribute in core transactional tables depends on another non-key attribute in the same table.
+
+ Conclusion:
+ Core schema is in 3NF, with one intentional denormalized field: ATTENDS.final_grade.
+
+🔹 Boyce-Codd Normal Form (BCNF)
+       Condition:
+       For every functional dependency:
+          X → Y
+       X must be a super key
+
+ Verification:
+•	assessment_id → assessment_type, total_marks, weight, assessment_date, course_offering_id
+•	course_offering_id → academic_year, semester, status, branch, course_id, faculty_id
+•	(student_mail, assessment_id) → attempt_date, marks_obtained
+•	(student_mail, course_offering_id) → enrollment_date, status, final_grade
+Key-based dependencies are preserved in core relations.
+
+ Conclusion:
+ Core transactional design is BCNF-oriented; ATTENDS.final_grade remains a controlled denormalization for performance and product behavior.
+
+
+Implementation Differences from Initial Design
+
+ Initial Mapping
+•	Separate relationship tables:
+o	HAS
+o	DEFINES
+o	TEACHES
+
+ Final Implementation
+•	Relationships merged using foreign keys:
+Relationship	Implemented As
+HAS	courseOfferingID in ASSESSMENT
+DEFINES	courseOfferingID in GRADE_CUTOFFS
+TEACHES	facultyID in COURSE_OFFERING
+
+Additional Implemented Differences
+•	COURSE_OFFERING includes status to model current vs archived offerings.
+•	ATTENDS includes final_grade as persisted computed outcome.
+•	Naming was standardized to snake_case in implemented schema.
+
+ Justification
+Many-to-one relationships with total participation are merged into entity tables to eliminate redundancy and simplify the schema without losing information. Controlled denormalization (ATTENDS.final_grade) is maintained by recomputation logic after marks/cutoff updates.
+
+ Final Conclusion
+The database schema is designed to minimize redundancy, avoid incompleteness, and ensure proper decomposition. The core transactional model satisfies 1NF, 2NF, 3NF, and BCNF principles, with one intentional denormalized field (ATTENDS.final_grade) to support efficient grade display and stable results. The final implementation preserves ER semantics while adapting the schema for production behavior and performance.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
