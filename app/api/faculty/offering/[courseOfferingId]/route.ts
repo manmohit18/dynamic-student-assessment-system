@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 import { decodeSession } from "@/lib/auth";
-import { getCourseReport, getFacultyCourseStudents } from "@/lib/db-queries";
+import { getCourseCutoffs, getCourseReport, getFacultyCourseStudents } from "@/lib/db-queries";
 import { query } from "@/lib/oracle";
 
 export async function GET(
@@ -46,6 +46,7 @@ export async function GET(
 
   const students = await getFacultyCourseStudents(Number(courseOfferingId));
   const report = await getCourseReport(Number(courseOfferingId));
+  const cutoffs = await getCourseCutoffs(Number(courseOfferingId));
   const assessments = await query<Record<string, unknown>>(
     `
       SELECT assessment_id, assessment_type, total_marks, weight, TO_CHAR(assessment_date, 'YYYY-MM-DD') AS assessment_date
@@ -70,6 +71,7 @@ export async function GET(
     },
     students,
     report,
+    cutoffs,
     assessments: assessments.map((assessment: Record<string, unknown>) => ({
       assessmentId: Number(assessment.ASSESSMENT_ID),
       assessmentType: String(assessment.ASSESSMENT_TYPE),

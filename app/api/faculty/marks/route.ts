@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 import { decodeSession } from "@/lib/auth";
+import { recalculateCourseFinalGrades } from "@/lib/db-queries";
 import { executeMany, query } from "@/lib/oracle";
 
 export async function POST(request: Request) {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
 
   const assessmentRows = await query<Record<string, unknown>>(
     `
-      SELECT a.assessment_id, fo.faculty_id
+      SELECT a.assessment_id, fo.faculty_id, fo.course_offering_id
       FROM assessment a
       JOIN course_offering fo ON fo.course_offering_id = a.course_offering_id
       WHERE a.assessment_id = :assessmentId
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
     `,
     binds,
   );
+
+  await recalculateCourseFinalGrades(Number(assessmentRows[0].COURSE_OFFERING_ID));
 
   return Response.json({ ok: true });
 }

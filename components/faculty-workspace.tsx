@@ -40,6 +40,11 @@ type OfferingDetail = {
     facultyName: string;
   };
   report: { average: number; highest: number; lowest: number };
+  cutoffs: Array<{
+    grade: string;
+    minMarks: number;
+    maxMarks: number;
+  }>;
   assessments: Array<{
     assessmentId: number;
     assessmentType: string;
@@ -59,6 +64,8 @@ type OfferingDetail = {
   }>;
 };
 
+const defaultCutoffGrades = ["A+", "A", "B", "C", "D", "E", "F"];
+
 export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
   const [selectedOfferingId, setSelectedOfferingId] = useState<number>(offerings[0]?.courseOfferingId ?? 0);
   const [detail, setDetail] = useState<OfferingDetail | null>(null);
@@ -66,6 +73,9 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
   const [submission, setSubmission] = useState<Record<string, string>>({});
   const [saveMessage, setSaveMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [cutoffDraft, setCutoffDraft] = useState<Record<string, string>>({});
+  const [cutoffMessage, setCutoffMessage] = useState("");
+  const [isSavingCutoffs, setIsSavingCutoffs] = useState(false);
 
   const selectedOffering = useMemo(
     () => offerings.find((offering) => offering.courseOfferingId === selectedOfferingId) ?? offerings[0] ?? null,
@@ -86,7 +96,16 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
       setDetail(data);
       setAssessmentId(data.assessments[0]?.assessmentId ?? null);
       setSubmission(Object.fromEntries(data.students.map((student) => [student.email, ""])));
+      setCutoffDraft(
+        Object.fromEntries(
+          (data.cutoffs.length ? data.cutoffs : defaultCutoffGrades.map((grade) => ({ grade, minMarks: 0, maxMarks: 0 }))).map((cutoff) => [
+            cutoff.grade,
+            String(cutoff.minMarks),
+          ]),
+        ),
+      );
       setSaveMessage("");
+      setCutoffMessage("");
     }
 
     loadDetail();
@@ -133,6 +152,49 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
       setSaveMessage("Marks saved, but the updated view could not be refreshed.");
     }
     setIsSaving(false);
+  }
+
+  async function saveCutoffs() {
+    if (!detail) return;
+
+    const rows = Object.entries(cutoffDraft)
+      .map(([grade, minMarks]) => ({ grade, minMarks: Number(minMarks) }))
+      .filter((row) => Number.isFinite(row.minMarks))
+      .sort((left, right) => right.minMarks - left.minMarks);
+
+    if (rows.length === 0) {
+      setCutoffMessage("Enter at least one valid cutoff.");
+      return;
+    }
+
+    setIsSavingCutoffs(true);
+    setCutoffMessage("");
+    const response = await fetch("/api/faculty/cutoffs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        courseOfferingId: detail.offering.courseOfferingId,
+        cutoffs: rows,
+      }),
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setCutoffMessage(payload?.error ?? "Unable to save cutoffs.");
+      setIsSavingCutoffs(false);
+      return;
+    }
+
+    const refreshed = await fetch(`/api/faculty/offering/${detail.offering.courseOfferingId}`);
+    if (refreshed.ok) {
+      const data = (await refreshed.json()) as OfferingDetail;
+      setDetail(data);
+      setSubmission(Object.fromEntries(data.students.map((student) => [student.email, ""])));
+      setCutoffDraft(Object.fromEntries(data.cutoffs.map((cutoff) => [cutoff.grade, String(cutoff.minMarks)])));
+    }
+
+    setCutoffMessage("Cutoffs saved and grades recomputed.");
+    setIsSavingCutoffs(false);
   }
 
   if (!selectedOffering) {
@@ -244,6 +306,48 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
           </CardContent>
         </Card>
       </section>
+
+      <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+        <CardHeader>
+          <CardTitle className="text-slate-900">Grade cutoffs</CardTitle>
+          <CardDescription>Set minimum marks for each grade band for this offering.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {detail ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-slate-900">Minimum marks by grade</p>
+                <Button size="sm" onClick={saveCutoffs} disabled={isSavingCutoffs}>
+                  {isSavingCutoffs ? "Saving..." : "Save cutoffs"}
+                </Button>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {(detail.cutoffs.length ? detail.cutoffs : defaultCutoffGrades.map((grade) => ({ grade, minMarks: 0, maxMarks: 0 }))).map((cutoff) => (
+                  <label key={`cutoff-${cutoff.grade}`} className="space-y-1 text-sm text-slate-700">
+                    <span>{cutoff.grade}</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={cutoffDraft[cutoff.grade] ?? String(cutoff.minMarks)}
+                      onChange={(e) =>
+                        setCutoffDraft((current) => ({
+                          ...current,
+                          [cutoff.grade]: e.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+              {cutoffMessage ? <p className="text-sm text-slate-600">{cutoffMessage}</p> : null}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400">Select a course to edit grade cutoffs.</p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <CardHeader>

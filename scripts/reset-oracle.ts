@@ -268,6 +268,7 @@ async function createSchema() {
       course_offering_id NUMBER NOT NULL,
       enrollment_date DATE NOT NULL,
       status VARCHAR2(20) NOT NULL,
+      final_grade VARCHAR2(3),
       CONSTRAINT pk_attends PRIMARY KEY (student_mail, course_offering_id),
       CONSTRAINT fk_attends_student FOREIGN KEY (student_mail) REFERENCES student(email),
       CONSTRAINT fk_attends_course_offering FOREIGN KEY (course_offering_id)
@@ -427,30 +428,7 @@ async function createSchema() {
         WHERE at.student_mail = a.student_mail
           AND asmt.course_offering_id = fo.course_offering_id
       ), 0) AS weighted_total,
-      CASE
-        WHEN NVL((
-          SELECT COUNT(*)
-          FROM assessment asmt
-          WHERE asmt.course_offering_id = fo.course_offering_id
-        ), 0) = NVL((
-          SELECT COUNT(*)
-          FROM attempts at
-          JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
-          WHERE at.student_mail = a.student_mail
-            AND asmt.course_offering_id = fo.course_offering_id
-        ), 0)
-        THEN GetGrade(
-          NVL((
-            SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
-            FROM attempts at
-            JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
-            WHERE at.student_mail = a.student_mail
-              AND asmt.course_offering_id = fo.course_offering_id
-          ), 0),
-          fo.course_offering_id
-        )
-        ELSE NULL
-      END AS final_grade,
+      a.final_grade,
       a.status AS status
     FROM attends a
     JOIN course_offering fo ON fo.course_offering_id = a.course_offering_id
@@ -760,6 +738,41 @@ async function seedData() {
     `,
     attemptRows,
   );
+
+  await execute(`
+    UPDATE attends a
+    SET final_grade = CASE
+      WHEN (
+        SELECT COUNT(*)
+        FROM assessment asmt
+        WHERE asmt.course_offering_id = a.course_offering_id
+      ) > 0
+       AND (
+        SELECT COUNT(*)
+        FROM assessment asmt
+        WHERE asmt.course_offering_id = a.course_offering_id
+      ) = (
+        SELECT COUNT(*)
+        FROM attempts at
+        JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
+        WHERE at.student_mail = a.student_mail
+          AND asmt.course_offering_id = a.course_offering_id
+          AND at.marks_obtained IS NOT NULL
+      )
+      THEN GetGrade(
+        NVL((
+          SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
+          FROM attempts at
+          JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
+          WHERE at.student_mail = a.student_mail
+            AND asmt.course_offering_id = a.course_offering_id
+            AND at.marks_obtained IS NOT NULL
+        ), 0),
+        a.course_offering_id
+      )
+      ELSE NULL
+    END
+  `);
 
   const sgpaRows = sampleStudents.flatMap((student) => {
     const semesterCourseRows = courseOfferingLookup.filter(

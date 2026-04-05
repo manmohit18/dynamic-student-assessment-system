@@ -331,32 +331,7 @@ export async function getFacultyHistoricalOfferings(email: string): Promise<Facu
         s.username,
         s.branch,
         a.status,
-        CASE
-          WHEN NVL((
-            SELECT COUNT(*)
-            FROM assessment asmt
-            WHERE asmt.course_offering_id = fo.course_offering_id
-          ), 0) = NVL((
-            SELECT COUNT(*)
-            FROM attempts at
-            JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
-            WHERE at.student_mail = s.email
-              AND asmt.course_offering_id = fo.course_offering_id
-              AND at.marks_obtained IS NOT NULL
-          ), 0)
-          THEN GetGrade(
-            NVL((
-              SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
-              FROM attempts at
-              JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
-              WHERE at.student_mail = s.email
-                AND asmt.course_offering_id = fo.course_offering_id
-                AND at.marks_obtained IS NOT NULL
-            ), 0),
-            fo.course_offering_id
-          )
-          ELSE NULL
-        END AS final_grade
+        a.final_grade
       FROM course_offering fo
       JOIN attends a ON a.course_offering_id = fo.course_offering_id
       JOIN student s ON s.email = a.student_mail
@@ -433,36 +408,11 @@ export async function getFacultyCourseStudents(courseOfferingId: number) {
           WHERE at.student_mail = s.email
             AND asmt.course_offering_id = :courseOfferingId
         ), 0) AS raw_possible,
-        CASE
-          WHEN NVL((
-            SELECT COUNT(*)
-            FROM assessment asmt
-            WHERE asmt.course_offering_id = :courseOfferingId
-          ), 0) = NVL((
-            SELECT COUNT(*)
-            FROM attempts at
-            JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
-            WHERE at.student_mail = s.email
-              AND asmt.course_offering_id = :courseOfferingId
-              AND at.marks_obtained IS NOT NULL
-          ), 0)
-          THEN GetGrade(
-            NVL((
-              SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
-              FROM attempts at
-              JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
-              WHERE at.student_mail = s.email
-                AND asmt.course_offering_id = :courseOfferingId
-                AND at.marks_obtained IS NOT NULL
-            ), 0),
-            :courseOfferingId
-          )
-          ELSE NULL
-        END AS final_grade
+        a.final_grade
       FROM attends a
       JOIN student s ON s.email = a.student_mail
       WHERE a.course_offering_id = :courseOfferingId
-      GROUP BY s.email, s.username, s.branch, a.status
+      GROUP BY s.email, s.username, s.branch, a.status, a.final_grade
       ORDER BY s.username
     `,
     { courseOfferingId },
@@ -509,4 +459,63 @@ export async function getGradeForScore(score: number, courseOfferingId: number) 
   )) as Record<string, unknown>[];
 
   return String(rows[0]?.GRADE ?? "F");
+}
+
+export async function getCourseCutoffs(courseOfferingId: number) {
+  const rows = (await query<Record<string, unknown>>(
+    `
+      SELECT grade, min_marks, max_marks
+      FROM grade_cutoffs
+      WHERE course_offering_id = :courseOfferingId
+      ORDER BY min_marks DESC
+    `,
+    { courseOfferingId },
+  )) as Record<string, unknown>[];
+
+  return rows.map((row) => ({
+    grade: String(row.GRADE),
+    minMarks: toNumber(row.MIN_MARKS),
+    maxMarks: toNumber(row.MAX_MARKS),
+  }));
+}
+
+export async function recalculateCourseFinalGrades(courseOfferingId: number) {
+  await execute(
+    `
+      UPDATE attends a
+      SET final_grade = CASE
+        WHEN (
+          SELECT COUNT(*)
+          FROM assessment asmt
+          WHERE asmt.course_offering_id = a.course_offering_id
+        ) > 0
+         AND (
+          SELECT COUNT(*)
+          FROM assessment asmt
+          WHERE asmt.course_offering_id = a.course_offering_id
+        ) = (
+          SELECT COUNT(*)
+          FROM attempts at
+          JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
+          WHERE at.student_mail = a.student_mail
+            AND asmt.course_offering_id = a.course_offering_id
+            AND at.marks_obtained IS NOT NULL
+        )
+        THEN GetGrade(
+          NVL((
+            SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
+            FROM attempts at
+            JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
+            WHERE at.student_mail = a.student_mail
+              AND asmt.course_offering_id = a.course_offering_id
+              AND at.marks_obtained IS NOT NULL
+          ), 0),
+          a.course_offering_id
+        )
+        ELSE NULL
+      END
+      WHERE a.course_offering_id = :courseOfferingId
+    `,
+    { courseOfferingId },
+  );
 }
