@@ -1,0 +1,37 @@
+\contentsline {chapter}{Certificate}{i}{chapter*.1}%
+\contentsline {chapter}{Abstract}{ii}{chapter*.2}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Problem Statement and Objectives}{2}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Problem Statement}{2}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Objectives}{2}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Functional Requirements Mapped to the Database}{3}{section.2.3}%
+\contentsline {chapter}{\numberline {3}ER Diagram, Relation Schema, and Normalization}{4}{chapter.3}%
+\contentsline {section}{\numberline {3.1}ER Diagram}{4}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Final Relation Schema}{5}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Design Alternatives}{6}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Redundancy}{6}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Incompleteness}{6}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Decomposition}{6}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Normalization}{7}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}First Normal Form}{7}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Second Normal Form}{7}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Third Normal Form}{7}{subsection.3.4.3}%
+\contentsline {subsection}{\numberline {3.4.4}Boyce-Codd Normal Form}{7}{subsection.3.4.4}%
+\contentsline {subsection}{\numberline {3.4.5}Implementation Differences from the Early Sketch}{7}{subsection.3.4.5}%
+\contentsline {chapter}{\numberline {4}DDL Commands, PL/SQL Procedures, Functions, and Triggers}{8}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Schema Definition}{8}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Sample Data}{10}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Important Queries}{10}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Compute Weighted Total Marks}{10}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Assign Grades}{10}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Class Performance Report}{11}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Functions and Procedures}{11}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}GetGrade Function}{11}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}GetTotalMarks Procedure}{11}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}ClassReport Procedure}{12}{subsection.4.4.3}%
+\contentsline {section}{\numberline {4.5}Triggers}{12}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Validate Assessment Weight}{12}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Validate Marks Range}{13}{subsection.4.5.2}%
+\contentsline {section}{\numberline {4.6}Derived Views Used by the Application}{14}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Conclusion, Limitations, and Future Work}{16}{chapter.5}%
+\contentsline {chapter}{\numberline {6}References}{17}{chapter.6}%
