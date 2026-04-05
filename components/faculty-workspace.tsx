@@ -70,6 +70,8 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
   const [selectedOfferingId, setSelectedOfferingId] = useState<number>(offerings[0]?.courseOfferingId ?? 0);
   const [detail, setDetail] = useState<OfferingDetail | null>(null);
   const [assessmentId, setAssessmentId] = useState<number | null>(null);
+  const [assessmentTotalMarks, setAssessmentTotalMarks] = useState("");
+  const [assessmentWeight, setAssessmentWeight] = useState("");
   const [submission, setSubmission] = useState<Record<string, string>>({});
   const [saveMessage, setSaveMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -93,9 +95,12 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
       const response = await fetch(`/api/faculty/offering/${selectedOfferingId}`);
       if (!response.ok) return;
       const data = (await response.json()) as OfferingDetail;
+      const firstAssessment = data.assessments[0] ?? null;
       setDetail(data);
-      setAssessmentId(data.assessments[0]?.assessmentId ?? null);
+      setAssessmentId(firstAssessment?.assessmentId ?? null);
       setSubmission(Object.fromEntries(data.students.map((student) => [student.email, ""])));
+      setAssessmentTotalMarks(firstAssessment ? String(firstAssessment.totalMarks) : "");
+      setAssessmentWeight(firstAssessment ? String(firstAssessment.weight) : "");
       setCutoffDraft(
         Object.fromEntries(
           (data.cutoffs.length ? data.cutoffs : defaultCutoffGrades.map((grade) => ({ grade, minMarks: 0, maxMarks: 0 }))).map((cutoff) => [
@@ -113,6 +118,14 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
 
   async function saveMarks() {
     if (!assessmentId || !detail) return;
+    const totalMarks = Number(assessmentTotalMarks);
+    const weight = Number(assessmentWeight);
+
+    if (!Number.isFinite(totalMarks) || totalMarks <= 0 || !Number.isFinite(weight) || weight <= 0) {
+      setSaveMessage("Enter valid positive values for total marks and weight.");
+      return;
+    }
+
     const rows = Object.entries(submission)
       .map(([studentEmail, marksObtained]) => ({ studentEmail, marksObtained: marksObtained.trim() }))
       .filter((row) => row.marksObtained !== "")
@@ -131,6 +144,8 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         assessmentId,
+        totalMarks,
+        weight,
         marks: rows,
       }),
     });
@@ -147,6 +162,11 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
       const refreshed = (await response.json()) as OfferingDetail;
       setDetail(refreshed);
       setSubmission(Object.fromEntries(refreshed.students.map((student) => [student.email, ""])));
+      const refreshedSelected = refreshed.assessments.find((assessment) => assessment.assessmentId === assessmentId);
+      if (refreshedSelected) {
+        setAssessmentTotalMarks(String(refreshedSelected.totalMarks));
+        setAssessmentWeight(String(refreshedSelected.weight));
+      }
       setSaveMessage(`${rows.length} mark${rows.length === 1 ? "" : "s"} saved successfully.`);
     } else {
       setSaveMessage("Marks saved, but the updated view could not be refreshed.");
@@ -257,7 +277,15 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
                 <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
                   <Select
                     value={assessmentId ? String(assessmentId) : ""}
-                    onChange={(e) => setAssessmentId(Number(e.target.value))}
+                    onChange={(e) => {
+                      const nextAssessmentId = Number(e.target.value);
+                      setAssessmentId(nextAssessmentId);
+                      const nextAssessment = detail?.assessments.find(
+                        (assessment) => assessment.assessmentId === nextAssessmentId,
+                      );
+                      setAssessmentTotalMarks(nextAssessment ? String(nextAssessment.totalMarks) : "");
+                      setAssessmentWeight(nextAssessment ? String(nextAssessment.weight) : "");
+                    }}
                   >
                     <option value="">Choose assessment</option>
                     {detail.assessments.map((assessment) => (
@@ -280,6 +308,29 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
 
                 {saveMessage ? <p className="text-sm text-slate-600">{saveMessage}</p> : null}
 
+                <div className="grid gap-3 sm:grid-cols-2 rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                  <label className="space-y-1 text-sm text-slate-700">
+                    <span>Total marks</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={assessmentTotalMarks}
+                      onChange={(e) => setAssessmentTotalMarks(e.target.value)}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm text-slate-700">
+                    <span>Weight</span>
+                    <Input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={assessmentWeight}
+                      onChange={(e) => setAssessmentWeight(e.target.value)}
+                    />
+                  </label>
+                </div>
+
                 <div className="space-y-3">
                   {detail.students.map((student) => (
                     <div key={student.email} className="grid gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:grid-cols-[1.4fr_0.8fr_0.6fr]">
@@ -291,8 +342,8 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
                         type="number"
                         min="0"
                         step="0.5"
-                        max={selectedAssessment?.totalMarks}
-                        placeholder={selectedAssessment ? `0 - ${selectedAssessment.totalMarks}` : "Enter marks"}
+                        max={assessmentTotalMarks || selectedAssessment?.totalMarks}
+                        placeholder={assessmentTotalMarks ? `0 - ${assessmentTotalMarks}` : selectedAssessment ? `0 - ${selectedAssessment.totalMarks}` : "Enter marks"}
                         value={submission[student.email] ?? ""}
                         onChange={(e) => setSubmission((current) => ({ ...current, [student.email]: e.target.value }))}
                       />

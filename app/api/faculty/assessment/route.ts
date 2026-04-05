@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 import { decodeSession } from "@/lib/auth";
 import { recalculateCourseFinalGrades } from "@/lib/db-queries";
-import { executeMany, query } from "@/lib/oracle";
+import { execute, query } from "@/lib/oracle";
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -15,22 +15,23 @@ export async function POST(request: Request) {
     assessmentId?: number;
     totalMarks?: number;
     weight?: number;
-    marks?: Array<{ studentEmail?: string; marksObtained?: number }>;
   };
 
-  if (!body.assessmentId || !Array.isArray(body.marks) || body.marks.length === 0 || typeof body.totalMarks !== "number" || typeof body.weight !== "number") {
-    return Response.json({ error: "Missing assessment, marks, total marks, or weight." }, { status: 400 });
+  if (!body.assessmentId || typeof body.totalMarks !== "number" || typeof body.weight !== "number") {
+    return Response.json({ error: "Missing assessment, total marks, or weight." }, { status: 400 });
   }
 
+  const assessmentId = Number(body.assessmentId);
   const totalMarks = Number(body.totalMarks);
   const weight = Number(body.weight);
+
   if (!Number.isFinite(totalMarks) || totalMarks <= 0 || !Number.isFinite(weight) || weight <= 0) {
     return Response.json({ error: "Total marks and weight must be positive numbers." }, { status: 400 });
   }
 
-  const assessmentRows = await query<Record<string, unknown>>(
+  const rows = await query<Record<string, unknown>>(
     `
-      SELECT a.assessment_id, fo.faculty_id, fo.course_offering_id
+      SELECT a.assessment_id, a.assessment_type, fo.course_offering_id
       FROM assessment a
       JOIN course_offering fo ON fo.course_offering_id = a.course_offering_id
       WHERE a.assessment_id = :assessmentId
@@ -39,11 +40,16 @@ export async function POST(request: Request) {
         )
       FETCH FIRST 1 ROW ONLY
     `,
-    { assessmentId: body.assessmentId, email: session.email },
+    { assessmentId, email: session.email },
   );
 
-  if (!assessmentRows[0]) {
+  const assessment = rows[0];
+  if (!assessment) {
     return Response.json({ error: "Assessment not found." }, { status: 404 });
+  }
+
+  if (!/quiz/i.test(String(assessment.ASSESSMENT_TYPE ?? ""))) {
+    return Response.json({ error: "Only quiz components can be reconfigured here." }, { status: 400 });
   }
 
   const maxMarkRows = await query<Record<string, unknown>>(
@@ -52,7 +58,7 @@ export async function POST(request: Request) {
       FROM attempts
       WHERE assessment_id = :assessmentId
     `,
-    { assessmentId: body.assessmentId },
+    { assessmentId },
   );
 
   const maxObtained = Number(maxMarkRows[0]?.MAX_OBTAINED ?? 0);
@@ -64,50 +70,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    await executeMany(
+    await execute(
       `
         UPDATE assessment
         SET total_marks = :totalMarks,
             weight = :weight
         WHERE assessment_id = :assessmentId
       `,
-      [{ totalMarks, weight, assessmentId: Number(body.assessmentId) }],
+      { totalMarks, weight, assessmentId },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to update assessment settings.";
+    const message = error instanceof Error ? error.message : "Unable to update quiz settings.";
     return Response.json({ error: message }, { status: 400 });
   }
 
-  const binds = body.marks
-    .filter((row) => row.studentEmail && typeof row.marksObtained === "number")
-    .map((row) => ({
-      student_mail: String(row.studentEmail).toLowerCase(),
-      assessment_id: Number(body.assessmentId),
-      attempt_date: new Date().toISOString().slice(0, 10),
-      marks_obtained: Number(row.marksObtained),
-    }));
-
-  await executeMany(
-    `
-      MERGE INTO attempts t
-      USING (
-        SELECT :student_mail AS student_mail,
-               :assessment_id AS assessment_id,
-               TO_DATE(:attempt_date, 'YYYY-MM-DD') AS attempt_date,
-               :marks_obtained AS marks_obtained
-        FROM dual
-      ) src
-      ON (t.student_mail = src.student_mail AND t.assessment_id = src.assessment_id)
-      WHEN MATCHED THEN
-        UPDATE SET t.attempt_date = src.attempt_date, t.marks_obtained = src.marks_obtained
-      WHEN NOT MATCHED THEN
-        INSERT (student_mail, assessment_id, attempt_date, marks_obtained)
-        VALUES (src.student_mail, src.assessment_id, src.attempt_date, src.marks_obtained)
-    `,
-    binds,
-  );
-
-  await recalculateCourseFinalGrades(Number(assessmentRows[0].COURSE_OFFERING_ID));
+  await recalculateCourseFinalGrades(Number(assessment.COURSE_OFFERING_ID));
 
   return Response.json({ ok: true });
 }

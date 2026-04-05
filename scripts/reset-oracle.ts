@@ -3,90 +3,11 @@
 import { branches, semesterCourses } from "../lib/catalog";
 import { hashPassword } from "../lib/auth";
 import { execute, executeMany, query } from "../lib/oracle";
+import { sampleFaculty, sampleStudents } from "./seed-users";
 import type {
   AssessmentResult,
   CourseOfferingResult,
-  RoleSeed,
-  StudentSeed,
 } from "../types/reset-oracle";
-
-const sampleFaculty: RoleSeed[] = [
-  {
-    email: "faculty.cse@college.edu",
-    username: "Dr. Ananya Rao",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "CSE",
-  },
-  {
-    email: "faculty.core@college.edu",
-    username: "Dr. Vikram Sen",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "CSE",
-  },
-  {
-    email: "faculty.it@college.edu",
-    username: "Dr. Leena Iyer",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "IT",
-  },
-  {
-    email: "faculty.cce@college.edu",
-    username: "Dr. Karthik Das",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "CCE",
-  },
-  {
-    email: "faculty.dse@college.edu",
-    username: "Dr. Rohan Bhat",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "DSE",
-  },
-  {
-    email: "faculty.aiml@college.edu",
-    username: "Dr. Meera Kulkarni",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "AIML",
-  },
-  {
-    email: "faculty.math@college.edu",
-    username: "Dr. Neel Shah",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "MAT",
-  },
-  {
-    email: "faculty.physics@college.edu",
-    username: "Dr. Priya Menon",
-    password: "Faculty@123",
-    role: "faculty",
-    department: "PHY",
-  },
-];
-
-const sampleStudents: StudentSeed[] = branches.flatMap((branch, branchIndex) =>
-  Array.from({ length: 6 }, (_, studentIndex) => {
-    const id = branchIndex * 6 + studentIndex + 1;
-    const isPrimaryCseStudent = branch === "CSE" && studentIndex === 0;
-    return {
-      email: isPrimaryCseStudent
-        ? "cse.student@college.edu"
-        : `${branch.toLowerCase()}.student${studentIndex + 1}@college.edu`,
-      username: isPrimaryCseStudent ? "Aarav Mehta" : `${branch} Student ${studentIndex + 1}`,
-      password: "Student@123",
-      role: "student" as const,
-      branch,
-      currentSemester: 4,
-      currentYear: 2025,
-      graduationYear: 2027 + (id % 2),
-    };
-  }),
-);
 
 const gradePoints: Record<string, number> = {
   "A+": 10,
@@ -117,14 +38,14 @@ function randFromSeed(seed: number, min: number, max: number) {
 function assessmentPlan(type: "Theory" | "Lab") {
   return type === "Theory"
     ? [
-        { label: "Quiz", totalMarks: 10, weight: 10 },
+        { label: "Quiz", totalMarks: 20, weight: 20 },
         { label: "Mid Term", totalMarks: 30, weight: 30 },
         { label: "End Term", totalMarks: 50, weight: 50 },
       ]
     : [
         { label: "Notebook", totalMarks: 20, weight: 20 },
-        { label: "Quiz", totalMarks: 10, weight: 10 },
-        { label: "Mid Term", totalMarks: 30, weight: 30 },
+        { label: "Quiz", totalMarks: 20, weight: 20 },
+        { label: "Mid Term", totalMarks: 20, weight: 20 },
         { label: "End Term", totalMarks: 40, weight: 40 },
       ];
 }

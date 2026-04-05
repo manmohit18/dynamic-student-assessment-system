@@ -90,6 +90,9 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
                     {detail.course.courseId} • {detail.course.courseType}
                   </p>
                   <h4 className="mt-2 text-xl font-medium text-slate-900">{detail.course.courseTitle}</h4>
+                  {detail.course.finalGrade ? (
+                    <Badge className="mt-2 border-stone-200 bg-white text-slate-700">{detail.course.finalGrade}</Badge>
+                  ) : null}
                   <p className="mt-2 text-sm text-slate-600">
                     {detail.course.weightedTotal}/{detail.course.totalWeight} marks earned so far.
                   </p>
