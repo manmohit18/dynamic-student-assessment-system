@@ -76,4 +76,11 @@ export type FacultyHistoricalOffering = {
     minMarks: number;
     maxMarks: number;
   }>;
+  students: Array<{
+    email: string;
+    username: string;
+    branch: string;
+    status: string;
+    finalGrade: string | null;
+  }>;
 };

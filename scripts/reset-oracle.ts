@@ -72,9 +72,12 @@ const sampleFaculty: RoleSeed[] = [
 const sampleStudents: StudentSeed[] = branches.flatMap((branch, branchIndex) =>
   Array.from({ length: 6 }, (_, studentIndex) => {
     const id = branchIndex * 6 + studentIndex + 1;
+    const isPrimaryCseStudent = branch === "CSE" && studentIndex === 0;
     return {
-      email: `${branch.toLowerCase()}.student${studentIndex + 1}@college.edu`,
-      username: `${branch} Student ${studentIndex + 1}`,
+      email: isPrimaryCseStudent
+        ? "cse.student@college.edu"
+        : `${branch.toLowerCase()}.student${studentIndex + 1}@college.edu`,
+      username: isPrimaryCseStudent ? "Aarav Mehta" : `${branch} Student ${studentIndex + 1}`,
       password: "Student@123",
       role: "student" as const,
       branch,

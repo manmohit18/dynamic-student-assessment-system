@@ -64,10 +64,17 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
   const [detail, setDetail] = useState<OfferingDetail | null>(null);
   const [assessmentId, setAssessmentId] = useState<number | null>(null);
   const [submission, setSubmission] = useState<Record<string, string>>({});
+  const [saveMessage, setSaveMessage] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const selectedOffering = useMemo(
     () => offerings.find((offering) => offering.courseOfferingId === selectedOfferingId) ?? offerings[0] ?? null,
     [offerings, selectedOfferingId],
+  );
+
+  const selectedAssessment = useMemo(
+    () => detail?.assessments.find((assessment) => assessment.assessmentId === assessmentId) ?? null,
+    [detail, assessmentId],
   );
 
   useEffect(() => {
@@ -79,6 +86,7 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
       setDetail(data);
       setAssessmentId(data.assessments[0]?.assessmentId ?? null);
       setSubmission(Object.fromEntries(data.students.map((student) => [student.email, ""])));
+      setSaveMessage("");
     }
 
     loadDetail();
@@ -86,24 +94,45 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
 
   async function saveMarks() {
     if (!assessmentId || !detail) return;
-    await fetch("/api/faculty/marks", {
+    const rows = Object.entries(submission)
+      .map(([studentEmail, marksObtained]) => ({ studentEmail, marksObtained: marksObtained.trim() }))
+      .filter((row) => row.marksObtained !== "")
+      .map((row) => ({ studentEmail: row.studentEmail, marksObtained: Number(row.marksObtained) }))
+      .filter((row) => Number.isFinite(row.marksObtained));
+
+    if (rows.length === 0) {
+      setSaveMessage("Enter at least one mark before saving.");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveMessage("");
+    const saveResponse = await fetch("/api/faculty/marks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         assessmentId,
-        marks: Object.entries(submission).map(([studentEmail, marksObtained]) => ({
-          studentEmail,
-          marksObtained: Number(marksObtained),
-        })),
+        marks: rows,
       }),
     });
+
+    if (!saveResponse.ok) {
+      const payload = (await saveResponse.json().catch(() => null)) as { error?: string } | null;
+      setSaveMessage(payload?.error ?? "Unable to save marks. Please try again.");
+      setIsSaving(false);
+      return;
+    }
 
     const response = await fetch(`/api/faculty/offering/${selectedOfferingId}`);
     if (response.ok) {
       const refreshed = (await response.json()) as OfferingDetail;
       setDetail(refreshed);
       setSubmission(Object.fromEntries(refreshed.students.map((student) => [student.email, ""])));
+      setSaveMessage(`${rows.length} mark${rows.length === 1 ? "" : "s"} saved successfully.`);
+    } else {
+      setSaveMessage("Marks saved, but the updated view could not be refreshed.");
     }
+    setIsSaving(false);
   }
 
   if (!selectedOffering) {
@@ -171,15 +200,23 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
                     <option value="">Choose assessment</option>
                     {detail.assessments.map((assessment) => (
                       <option key={assessment.assessmentId} value={assessment.assessmentId}>
-                        {assessment.assessmentType}
+                        {assessment.assessmentType} ({assessment.totalMarks})
                       </option>
                     ))}
                   </Select>
-                  <Button onClick={saveMarks}>
+                  <Button onClick={saveMarks} disabled={isSaving}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Save marks
+                    {isSaving ? "Saving..." : "Save marks"}
                   </Button>
                 </div>
+
+                {selectedAssessment ? (
+                  <p className="text-sm text-slate-600">
+                    Enter marks for <span className="font-medium text-slate-900">{selectedAssessment.assessmentType}</span> out of {selectedAssessment.totalMarks}.
+                  </p>
+                ) : null}
+
+                {saveMessage ? <p className="text-sm text-slate-600">{saveMessage}</p> : null}
 
                 <div className="space-y-3">
                   {detail.students.map((student) => (
@@ -192,10 +229,11 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
                         type="number"
                         min="0"
                         step="0.5"
+                        max={selectedAssessment?.totalMarks}
+                        placeholder={selectedAssessment ? `0 - ${selectedAssessment.totalMarks}` : "Enter marks"}
                         value={submission[student.email] ?? ""}
                         onChange={(e) => setSubmission((current) => ({ ...current, [student.email]: e.target.value }))}
                       />
-                      <Badge className="justify-center">{student.finalGrade ?? "NA"}</Badge>
                     </div>
                   ))}
                 </div>

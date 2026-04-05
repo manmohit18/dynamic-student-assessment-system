@@ -96,6 +96,28 @@ export function FacultyHistoryWorkbench({ offerings }: FacultyHistoryWorkbenchPr
                     ))}
                   </div>
                 </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Student outcomes</p>
+                  {offering.students.length ? (
+                    <div className="mt-2 space-y-2">
+                      {offering.students.map((student) => (
+                        <div
+                          key={`${offering.courseOfferingId}-${student.email}`}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">{student.username}</p>
+                            <p className="text-xs text-slate-500">{student.email}</p>
+                          </div>
+                          <Badge className="border-stone-200 bg-white text-slate-700">{student.finalGrade ?? "Pending"}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-slate-500">No enrolled students for this offering.</p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -23,6 +23,7 @@ export type CourseOfferingResult = {
   SEMESTER: number;
   BRANCH: string;
   ACADEMIC_YEAR: number;
+  STATUS: string;
 };
 
 export type AssessmentResult = {

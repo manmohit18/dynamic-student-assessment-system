@@ -323,6 +323,65 @@ export async function getFacultyHistoricalOfferings(email: string): Promise<Facu
     return map;
   }, new Map<number, FacultyHistoricalOffering["cutoffs"]>());
 
+  const studentRows = (await query<Record<string, unknown>>(
+    `
+      SELECT
+        fo.course_offering_id,
+        s.email,
+        s.username,
+        s.branch,
+        a.status,
+        CASE
+          WHEN NVL((
+            SELECT COUNT(*)
+            FROM assessment asmt
+            WHERE asmt.course_offering_id = fo.course_offering_id
+          ), 0) = NVL((
+            SELECT COUNT(*)
+            FROM attempts at
+            JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
+            WHERE at.student_mail = s.email
+              AND asmt.course_offering_id = fo.course_offering_id
+              AND at.marks_obtained IS NOT NULL
+          ), 0)
+          THEN GetGrade(
+            NVL((
+              SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
+              FROM attempts at
+              JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
+              WHERE at.student_mail = s.email
+                AND asmt.course_offering_id = fo.course_offering_id
+                AND at.marks_obtained IS NOT NULL
+            ), 0),
+            fo.course_offering_id
+          )
+          ELSE NULL
+        END AS final_grade
+      FROM course_offering fo
+      JOIN attends a ON a.course_offering_id = fo.course_offering_id
+      JOIN student s ON s.email = a.student_mail
+      WHERE fo.faculty_id = (
+        SELECT faculty_id FROM faculty WHERE email = :email FETCH FIRST 1 ROW ONLY
+      )
+      ORDER BY fo.course_offering_id, s.username
+    `,
+    { email },
+  )) as Record<string, unknown>[];
+
+  const studentsByOffering = studentRows.reduce((map, row) => {
+    const offeringId = toNumber(row.COURSE_OFFERING_ID);
+    const bucket = map.get(offeringId) ?? [];
+    bucket.push({
+      email: String(row.EMAIL),
+      username: String(row.USERNAME),
+      branch: String(row.BRANCH),
+      status: String(row.STATUS),
+      finalGrade: toStringOrNull(row.FINAL_GRADE),
+    });
+    map.set(offeringId, bucket);
+    return map;
+  }, new Map<number, FacultyHistoricalOffering["students"]>());
+
   return rows.map((row) => {
     const courseOfferingId = toNumber(row.COURSE_OFFERING_ID);
     return {
@@ -340,6 +399,7 @@ export async function getFacultyHistoricalOfferings(email: string): Promise<Facu
       highestMarks: toNumber(row.HIGHEST_MARKS),
       lowestMarks: toNumber(row.LOWEST_MARKS),
       cutoffs: cutoffByOffering.get(courseOfferingId) ?? [],
+      students: studentsByOffering.get(courseOfferingId) ?? [],
     };
   });
 }
@@ -373,16 +433,32 @@ export async function getFacultyCourseStudents(courseOfferingId: number) {
           WHERE at.student_mail = s.email
             AND asmt.course_offering_id = :courseOfferingId
         ), 0) AS raw_possible,
-        GetGrade(
-          NVL((
-            SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
+        CASE
+          WHEN NVL((
+            SELECT COUNT(*)
+            FROM assessment asmt
+            WHERE asmt.course_offering_id = :courseOfferingId
+          ), 0) = NVL((
+            SELECT COUNT(*)
             FROM attempts at
             JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
             WHERE at.student_mail = s.email
               AND asmt.course_offering_id = :courseOfferingId
-          ), 0),
-          :courseOfferingId
-        ) AS final_grade
+              AND at.marks_obtained IS NOT NULL
+          ), 0)
+          THEN GetGrade(
+            NVL((
+              SELECT ROUND(SUM((at.marks_obtained / NULLIF(asmt.total_marks, 0)) * asmt.weight), 2)
+              FROM attempts at
+              JOIN assessment asmt ON asmt.assessment_id = at.assessment_id
+              WHERE at.student_mail = s.email
+                AND asmt.course_offering_id = :courseOfferingId
+                AND at.marks_obtained IS NOT NULL
+            ), 0),
+            :courseOfferingId
+          )
+          ELSE NULL
+        END AS final_grade
       FROM attends a
       JOIN student s ON s.email = a.student_mail
       WHERE a.course_offering_id = :courseOfferingId
