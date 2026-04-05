@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -105,7 +106,26 @@ export function FacultyWorkspace({ offerings }: FacultyWorkspaceProps) {
     }
   }
 
-  if (!selectedOffering) return null;
+  if (!selectedOffering) {
+    return (
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <Card className="border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+          <CardHeader>
+            <Badge className="w-fit">Faculty tools</Badge>
+            <CardTitle className="mt-2 text-3xl text-slate-900">No current course offerings</CardTitle>
+            <CardDescription>
+              There are no active offerings assigned right now. Open teaching history to inspect past classes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/faculty/history">Open teaching history</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">

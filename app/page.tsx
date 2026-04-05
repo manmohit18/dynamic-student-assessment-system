@@ -22,10 +22,6 @@ export default async function Home() {
         <section className="grid w-full gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
           <div className="space-y-7">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-600 shadow-sm">
-                <Sparkles className="h-4 w-4 text-amber-600" />
-                Oracle course portal
-              </div>
               <h1 className="max-w-3xl text-5xl font-semibold leading-tight text-slate-900 sm:text-6xl">
                 Marks, semesters, and course history in one place.
               </h1>

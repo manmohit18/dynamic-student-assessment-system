@@ -53,7 +53,6 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
           <CardHeader>
             <Badge className="w-fit">Current semester</Badge>
             <CardTitle className="mt-2 text-3xl">Semester {profile.currentSemester} courses</CardTitle>
-            <CardDescription>Each card shows earned versus available marks so far.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {currentCourses.map((course) => (
@@ -69,7 +68,7 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
                 <p className="text-xs uppercase tracking-[0.28em] text-slate-500">{course.courseId}</p>
                 <h4 className="mt-2 line-clamp-2 text-lg font-medium text-slate-900">{course.courseTitle}</h4>
                 <p className="mt-3 text-2xl font-semibold text-amber-700">
-                  {course.earnedRaw}/{course.possibleRaw}
+                  {course.weightedTotal}/{course.totalWeight}
                 </p>
                 <p className="mt-1 text-sm text-slate-600">{course.facultyName}</p>
                 {course.finalGrade ? <Badge className="mt-3 border-stone-200 bg-white text-slate-700">{course.finalGrade}</Badge> : null}
@@ -92,7 +91,7 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
                   </p>
                   <h4 className="mt-2 text-xl font-medium text-slate-900">{detail.course.courseTitle}</h4>
                   <p className="mt-2 text-sm text-slate-600">
-                    {detail.course.earnedRaw}/{detail.course.possibleRaw} raw marks earned so far.
+                    {detail.course.weightedTotal}/{detail.course.totalWeight} marks earned so far.
                   </p>
 
                 </div>
@@ -109,7 +108,7 @@ export function StudentCourseBrowser({ profile, courses }: StudentCourseBrowserP
                           {assessment.totalMarks} marks • {assessment.weight} weight
                         </p>
                       </div>
-                      <p className="text-lg font-semibold text-amber-700">{assessment.marksObtained ?? "NA"}</p>
+                      <p className="text-lg font-semibold text-amber-700">{assessment.marksObtained ?? "Pending"}</p>
                     </div>
                   ))}
                 </div>

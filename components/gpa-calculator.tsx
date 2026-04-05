@@ -201,8 +201,7 @@ export function GpaCalculator({
 
         {result !== null && calculatedFor === selectionKey ? (
           <div className="mt-5 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-            <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">Projected GPA</p>
-            <div className="mt-3 flex items-end gap-4">
+            <div className="flex items-end gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Predicted SGPA</p>
                 <p className="mt-2 text-4xl font-semibold text-slate-900">{result}</p>
@@ -219,7 +218,7 @@ export function GpaCalculator({
       </div>
 
       <div className="rounded-4xl border border-stone-200 bg-white/95 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
-        <div className="grid gap-4 lg:grid-cols-[1fr_0.76fr] lg:items-start">
+        <div className="grid gap-4">
           <div>
             <CardTitle className="text-xl text-slate-900">Subjects</CardTitle>
             <p className="mt-1 text-sm text-slate-600">Enter the grade you want to test for each subject.</p>

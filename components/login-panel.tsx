@@ -42,7 +42,6 @@ export function LoginPanel() {
     <Card className="mx-auto max-w-md border-stone-200 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
       <CardHeader>
         <CardTitle>Sign in</CardTitle>
-        <CardDescription>Use a seeded student or faculty account from the database reset.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">

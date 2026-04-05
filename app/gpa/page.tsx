@@ -75,7 +75,7 @@ export default async function GpaPage() {
                 <StepCard
                   index="02"
                   title="Assign grades"
-                  body="Enter the grade you want to test for every subject."
+                  body="Enter the grade you expect to test for every subject."
                 />
                 <StepCard
                   index="03"

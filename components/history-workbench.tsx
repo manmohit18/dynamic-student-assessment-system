@@ -153,9 +153,6 @@ export function HistoryWorkbench({ profile, courses }: HistoryWorkbenchProps) {
                     ))}
                   </select>
                 </label>
-                <Button asChild variant="secondary">
-                  <Link href="/courses">Current courses</Link>
-                </Button>
               </div>
             </div>
           </div>

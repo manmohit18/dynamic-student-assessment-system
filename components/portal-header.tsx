@@ -40,21 +40,30 @@ export function PortalHeader({ name, role }: PortalHeaderProps) {
             <LayoutDashboard className="mr-2 inline h-4 w-4" />
             Overview
           </Link>
-          <Link href="/courses" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
-            <BookOpenText className="mr-2 inline h-4 w-4" />
-            Courses
-          </Link>
-          <Link href="/history" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
-            <CalendarRange className="mr-2 inline h-4 w-4" />
-            History
-          </Link>
-          <Link href="/gpa" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
-            <Calculator className="mr-2 inline h-4 w-4" />
-            GPA
-          </Link>
-          {role !== "student" ? (
+          {role === "student" ? (
+            <>
+              <Link href="/courses" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
+                <BookOpenText className="mr-2 inline h-4 w-4" />
+                Courses
+              </Link>
+              <Link href="/history" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
+                <CalendarRange className="mr-2 inline h-4 w-4" />
+                History
+              </Link>
+              <Link href="/gpa" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
+                <Calculator className="mr-2 inline h-4 w-4" />
+                GPA
+              </Link>
+            </>
+          ) : null}
+          {role === "faculty" ? (
             <Link href="/faculty" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
               Faculty
+            </Link>
+          ) : null}
+          {role === "faculty" ? (
+            <Link href="/faculty/history" className="rounded-full px-4 py-2 text-sm text-slate-700 hover:bg-stone-100">
+              Teaching history
             </Link>
           ) : null}
         </nav>

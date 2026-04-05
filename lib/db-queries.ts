@@ -2,8 +2,8 @@ import oracledb from "oracledb";
 
 import { query, execute } from "@/lib/oracle";
 import type {
-  CourseDetailAssessment,
   CourseProgress,
+  FacultyHistoricalOffering,
   FacultyOffering,
   StudentProfile,
   StudentSgpaRecord,
@@ -62,6 +62,13 @@ export async function getStudentCourses(email: string): Promise<CourseProgress[]
           SELECT ROUND(SUM(a.weight), 2)
           FROM assessment a
           WHERE a.course_offering_id = p.course_offering_id
+            AND EXISTS (
+              SELECT 1
+              FROM attempts at
+              WHERE at.assessment_id = a.assessment_id
+                AND at.student_mail = :email
+                AND at.marks_obtained IS NOT NULL
+            )
         ), 0) AS total_weight,
         p.final_grade,
         p.status,
@@ -129,6 +136,13 @@ export async function getCourseDetail(email: string, courseOfferingId: number) {
           SELECT ROUND(SUM(a.weight), 2)
           FROM assessment a
           WHERE a.course_offering_id = p.course_offering_id
+            AND EXISTS (
+              SELECT 1
+              FROM attempts at
+              WHERE at.assessment_id = a.assessment_id
+                AND at.student_mail = :email
+                AND at.marks_obtained IS NOT NULL
+            )
         ), 0) AS total_weight,
         p.final_grade,
         p.status,
@@ -150,10 +164,11 @@ export async function getCourseDetail(email: string, courseOfferingId: number) {
         TO_CHAR(a.assessment_date, 'YYYY-MM-DD') AS assessment_date,
         at.marks_obtained
       FROM assessment a
-      LEFT JOIN attempts at
+      JOIN attempts at
         ON at.assessment_id = a.assessment_id
        AND at.student_mail = :email
       WHERE a.course_offering_id = :courseOfferingId
+        AND at.marks_obtained IS NOT NULL
       ORDER BY a.assessment_date, a.assessment_id
     `,
     { email, courseOfferingId },
@@ -199,6 +214,7 @@ export async function getFacultyOfferings(email: string): Promise<FacultyOfferin
         fo.academic_year,
         fo.semester,
         fo.branch,
+        fo.status AS offering_status,
         c.course_id,
         c.title AS course_title,
         c.course_type,
@@ -214,11 +230,13 @@ export async function getFacultyOfferings(email: string): Promise<FacultyOfferin
       WHERE fo.faculty_id = (
         SELECT faculty_id FROM faculty WHERE email = :email FETCH FIRST 1 ROW ONLY
       )
+        AND fo.status = 'current'
       GROUP BY
         fo.course_offering_id,
         fo.academic_year,
         fo.semester,
         fo.branch,
+        fo.status,
         c.course_id,
         c.title,
         c.course_type,
@@ -233,6 +251,7 @@ export async function getFacultyOfferings(email: string): Promise<FacultyOfferin
     academicYear: toNumber(row.ACADEMIC_YEAR),
     semester: toNumber(row.SEMESTER),
     branch: String(row.BRANCH),
+    offeringStatus: String(row.OFFERING_STATUS),
     courseId: String(row.COURSE_ID),
     courseTitle: String(row.COURSE_TITLE),
     courseType: String(row.COURSE_TYPE),
@@ -242,6 +261,87 @@ export async function getFacultyOfferings(email: string): Promise<FacultyOfferin
     highestMarks: toNumber(row.HIGHEST_MARKS),
     lowestMarks: toNumber(row.LOWEST_MARKS),
   }));
+}
+
+export async function getFacultyHistoricalOfferings(email: string): Promise<FacultyHistoricalOffering[]> {
+  const rows = (await query<Record<string, unknown>>(
+    `
+      SELECT
+        fo.course_offering_id,
+        fo.academic_year,
+        fo.semester,
+        fo.branch,
+        fo.status AS offering_status,
+        c.course_id,
+        c.title AS course_title,
+        c.course_type,
+        c.credits,
+        NVL(COUNT(DISTINCT atd.student_mail), 0) AS enrolled_students,
+        NVL(ROUND(AVG(at.marks_obtained), 2), 0) AS average_marks,
+        NVL(MAX(at.marks_obtained), 0) AS highest_marks,
+        NVL(MIN(at.marks_obtained), 0) AS lowest_marks
+      FROM course_offering fo
+      JOIN course c ON c.course_id = fo.course_id
+      LEFT JOIN attends atd ON atd.course_offering_id = fo.course_offering_id
+      LEFT JOIN assessment a ON a.course_offering_id = fo.course_offering_id
+      LEFT JOIN attempts at ON at.assessment_id = a.assessment_id
+      WHERE fo.faculty_id = (
+        SELECT faculty_id FROM faculty WHERE email = :email FETCH FIRST 1 ROW ONLY
+      )
+      GROUP BY
+        fo.course_offering_id,
+        fo.academic_year,
+        fo.semester,
+        fo.branch,
+        fo.status,
+        c.course_id,
+        c.title,
+        c.course_type,
+        c.credits
+      ORDER BY fo.academic_year DESC, fo.semester DESC, fo.course_offering_id
+    `,
+    { email },
+  )) as Record<string, unknown>[];
+
+  const cutoffRows = (await query<Record<string, unknown>>(
+    `
+      SELECT course_offering_id, grade, min_marks, max_marks
+      FROM grade_cutoffs
+      ORDER BY course_offering_id, min_marks DESC
+    `,
+  )) as Record<string, unknown>[];
+
+  const cutoffByOffering = cutoffRows.reduce((map, row) => {
+    const offeringId = toNumber(row.COURSE_OFFERING_ID);
+    const bucket = map.get(offeringId) ?? [];
+    bucket.push({
+      grade: String(row.GRADE),
+      minMarks: toNumber(row.MIN_MARKS),
+      maxMarks: toNumber(row.MAX_MARKS),
+    });
+    map.set(offeringId, bucket);
+    return map;
+  }, new Map<number, FacultyHistoricalOffering["cutoffs"]>());
+
+  return rows.map((row) => {
+    const courseOfferingId = toNumber(row.COURSE_OFFERING_ID);
+    return {
+      courseOfferingId,
+      academicYear: toNumber(row.ACADEMIC_YEAR),
+      semester: toNumber(row.SEMESTER),
+      branch: String(row.BRANCH),
+      offeringStatus: String(row.OFFERING_STATUS),
+      courseId: String(row.COURSE_ID),
+      courseTitle: String(row.COURSE_TITLE),
+      courseType: String(row.COURSE_TYPE),
+      credits: toNumber(row.CREDITS),
+      enrolledStudents: toNumber(row.ENROLLED_STUDENTS),
+      averageMarks: toNumber(row.AVERAGE_MARKS),
+      highestMarks: toNumber(row.HIGHEST_MARKS),
+      lowestMarks: toNumber(row.LOWEST_MARKS),
+      cutoffs: cutoffByOffering.get(courseOfferingId) ?? [],
+    };
+  });
 }
 
 export async function getFacultyCourseStudents(courseOfferingId: number) {

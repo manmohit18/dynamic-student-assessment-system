@@ -46,6 +46,7 @@ export type FacultyOffering = {
   academicYear: number;
   semester: number;
   branch: string;
+  offeringStatus: string;
   courseId: string;
   courseTitle: string;
   courseType: string;
@@ -54,4 +55,25 @@ export type FacultyOffering = {
   averageMarks: number;
   highestMarks: number;
   lowestMarks: number;
+};
+
+export type FacultyHistoricalOffering = {
+  courseOfferingId: number;
+  academicYear: number;
+  semester: number;
+  branch: string;
+  offeringStatus: string;
+  courseId: string;
+  courseTitle: string;
+  courseType: string;
+  credits: number;
+  enrolledStudents: number;
+  averageMarks: number;
+  highestMarks: number;
+  lowestMarks: number;
+  cutoffs: Array<{
+    grade: string;
+    minMarks: number;
+    maxMarks: number;
+  }>;
 };
