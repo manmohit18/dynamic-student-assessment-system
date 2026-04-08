@@ -1,4 +1,6 @@
 # AGENTS.md
 
-- Use Bun as your package manager
-- Use Shadcn components whenever possible
+Server start Script
+
+C:\DBMS\dbhomeXE\bin\lsnrctl.exe start
+C:\DBMS\dbhomeXE\bin\lsnrctl.exe status
